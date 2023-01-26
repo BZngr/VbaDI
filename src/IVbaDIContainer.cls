@@ -26,7 +26,7 @@ Public Function Resolve(ByVal pRegistrationID As String) As Object
 Attribute Resolve.VB_Description = "Composes a fully initialized Object by RegistrationID"
 End Function
 
-'@Description "pInstaller is a single IVbaDIInstaller or an Array/Collection of IVbaDIInstallers"
-Public Sub Install(ParamArray pInstallers() As Variant)
-Attribute Install.VB_Description = "pInstaller is a single IVbaDIInstaller or an Array/Collection of IVbaDIInstallers"
+'@Description "pLoaders is a single IVbaDIRegistrationLoader or an Array/Collection of IVbaDIRegistrationLoaders"
+Public Sub RegisterUsingLoader(ParamArray pLoaders() As Variant)
+Attribute RegisterUsingLoader.VB_Description = "pLoaders is a single IVbaDIRegistrationLoader or an Array/Collection of IVbaDIRegistrationLoaders"
 End Sub

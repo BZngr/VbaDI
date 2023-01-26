@@ -311,7 +311,7 @@ End Sub
 
 
 '@TestMethod("VbaDI.Container.Register")
-Private Sub InvalidInstallParameterParamErrorTest()
+Private Sub InvalidLoadParameterParamErrorTest()
     Dim ExpectedError As Long
     ExpectedError = 5
     VbaDIError.EnablePrintToImmediateWindow False
@@ -324,12 +324,12 @@ Private Sub InvalidInstallParameterParamErrorTest()
 
     Dim xColl As Collection
     Set xColl = New Collection
-    xColl.Add New VbaDITestInstaller
+    xColl.Add New VbaDITestRegistrationLoader
     xColl.Add 2
     
     'Act:
     '@Ignore FunctionReturnValueDiscarded
-    xSut.Install xColl
+    xSut.RegisterUsingLoader xColl
 
 Assert:
     Assert.Fail "Expected error was not raised"

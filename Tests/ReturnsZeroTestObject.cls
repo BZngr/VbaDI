@@ -12,18 +12,18 @@ Option Explicit
 
 Implements IVbaDITestInterface
 
-Implements IVbaDIInstaller
+Implements IVbaDIRegistrationLoader
 
-Private mInstaller As VbaDITestInstaller
+Private mLoader As VbaDITestRegistrationLoader
 
 Private Sub Class_Initialize()
-    Set mInstaller = New VbaDITestInstaller
+    Set mLoader = New VbaDITestRegistrationLoader
 End Sub
 
-Private Sub IVbaDIInstaller_Install(ByVal pContainer As IVbaDIContainer)
-    Dim xInstaller  As IVbaDIInstaller
-    Set xInstaller = mInstaller
-    xInstaller.Install pContainer
+Private Sub IVbaDIRegistrationLoader_LoadToContainer(ByVal pContainer As IVbaDIContainer)
+    Dim xLoader  As IVbaDIRegistrationLoader
+    Set xLoader = mLoader
+    xLoader.LoadToContainer pContainer
 End Sub
 
 Private Function IVbaDITestInterface_ReturnInputValue(ByVal inputVal As Long) As Long

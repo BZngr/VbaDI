@@ -23,7 +23,7 @@ Implements IVbaDIQueryCompose
 Private Type TVbaDITestObject
     InstanceID As String
     ObjectID As String
-    Installer As VbaDITestInstaller
+    Loader As VbaDITestRegistrationLoader
     ValueDependencies As Collection
     InjectedValueDependencies As VbaDIMap
     ObjectIDDependencies As Collection
@@ -37,7 +37,7 @@ End Type
 Private this As TVbaDITestObject
 
 Private Sub Class_Initialize()
-    Set this.Installer = New VbaDITestInstaller
+    Set this.Loader = New VbaDITestRegistrationLoader
     this.ObjectID = TypeName(Me)
     Set this.ValueDependencies = New Collection
     Set this.ObjectIDDependencies = New Collection

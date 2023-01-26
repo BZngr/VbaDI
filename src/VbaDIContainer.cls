@@ -61,22 +61,22 @@ Private Sub RegisterImpl(ByVal pIRegistrations As Collection)
     Next
 End Sub
 
-Private Sub IVbaDIContainer_Install(ParamArray pInstallers() As Variant)
-    InstallImpl util.Concat(New Collection, ParamArrayCode.RemoveNesting(pInstallers))
+Private Sub IVbaDIContainer_RegisterUsingLoader(ParamArray pLoaders() As Variant)
+    LoadImpl util.Concat(New Collection, ParamArrayCode.RemoveNesting(pLoaders))
 End Sub
 
-Private Sub InstallImpl(ByVal pInstallers As Collection)
+Private Sub LoadImpl(ByVal pLoaders As Collection)
     
-    If Not util.Every(pInstallers, _
-        VbaDIFunc.Create(VbaDIFunc.IsVbaDIInstaller)) Then
+    If Not util.Every(pLoaders, _
+        VbaDIFunc.Create(VbaDIFunc.IsVbaDILoader)) Then
         
         Err.Raise 5, TypeName(Me), _
-            "Invalid Collection element: must be IVbaDIInstaller instance"
+            "Invalid Collection element: must be IVbaDIRegistrationsLoader instance"
     End If
     
-    Dim xInstaller As IVbaDIInstaller
-    For Each xInstaller In pInstallers
-        xInstaller.Install Me
+    Dim xLoader As IVbaDIRegistrationLoader
+    For Each xLoader In pLoaders
+        xLoader.LoadToContainer Me
     Next
 End Sub
 

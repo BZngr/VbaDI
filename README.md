@@ -18,9 +18,9 @@ VbaDI is an Windows Excel VBA add-in (.xlam) that provides an Inversion of Contr
    4. If you opened a new workbook in step 2 - save the workbook as a macro-enabled .xlsm file.
 
 ### Recommended Tools and References
-1. Get [Rubberduck](https://rubberduckvba.com/) - Make your VBA development efforts more efficient, productive, and accurate.
+1. Get [Rubberduck](https://rubberduckvba.com/) - Make your VBA development efforts more efficient, productive, and correct.
 2. See #1
-3. "Dependency Injection in .NET" by Mark Seeman.  Everything to know about DI.
+3. "Dependency Injection in .NET" by Mark Seeman.
 4. [CastleWinsor](http://www.castleproject.org/projects/windsor/) (CW) Inversion of Control (IoC) container for C# - A production OSS IoC container that was used as a model for _VbaDI_.
 
 ### IoC Container process flow
@@ -77,23 +77,23 @@ container.Register VbaDI.ForInterface(TypeName(IRepo)).Use(New AppRepo) _
 3. The first registration of an interface or an object value dependency _wins_.  Subsequent registrations are ignored.
 4. If a class has no dependencies, but _is_ a dependency of another registered class, then it needs to be registered with the container.
 
-#### Installers
+#### RegistrationLoaders
 
-The registration process can be accomplished by _Installers_ which are `Class Modules` that implement the single method `IVbaDIInstaller` interface:
+The registration process can be accomplished by _Loaders_ which are `Class Modules` that implement the single method `IVbaDIRegistrationLoader` interface:
 
-###### IVbaDInstaller
+###### IVbaDIRegistrationLoader
 ```vba
-Public Sub Install(ByVal pContainer As IVbaDIContainer)
+Public Sub LoadToContainer(ByVal pContainer As IVbaDIContainer)
 End Sub
 ```
 
-An example of typical Installer object content:
+An example of typical Loader object content:
 ```vba
 Option Explicit
 
-Implements IVbaDIInstaller
+Implements IVbaDIRegistrationLoader
 
-Private Sub IVbaDIInstaller_Install(ByVal pContainer As IVbaDIContainer)
+Private Sub IVbaDIRegistrationLoader_LoadToContainer(ByVal pContainer As IVbaDIContainer)
     
      pContainer.Register VbaDI.ForInterface(TypeName(New IMyService)) _
 	     .Use(New MyServiceImpl)
@@ -104,12 +104,12 @@ Private Sub IVbaDIInstaller_Install(ByVal pContainer As IVbaDIContainer)
      '... and so on
 End Sub
 ```
-###### Notes regarding Installers/IVbaDIInstaller
+###### Notes regarding Loaders/IVbaDIRegistrationLoader
 
-1. Using an Installer to configure the IoC container is recommended.
-2. One or more Installers can be used to configure a container.
-3. Installers are custom class modules of an application, not the add-in.  
-4. Installers help organize/modularize IoC container configuration.
+1. Using a RegistrationLoader to configure the IoC container is recommended.
+2. One or more RegistrationLoaders can be used to configure a container.
+3. RegistrationLoaders are custom class modules of an application, not the add-in.  
+4. RegistrationLoaders help organize/modularize IoC container configuration.
 
 ### Resolve:
 
@@ -257,13 +257,13 @@ On Error GoTo ErrorExit
     Dim xContainer As IVbaDIContainer
     Set xContainer = VbaDI.CreateContainer()
     
-'Register...'Install' the Installer
-    xContainer.Install New AppIoCInstaller
+'Register...Register using a RegistrationLoader
+    xContainer.RegisterUsingLoader New AppIoCLoader
     
 'Resolve...One call does it all
     Set this.App = xContainer.Resolve(TypeName(New App))
  
-'Invoke the App...All registered objects are assembled and initialized  
+'Invoke the App...All object map instances are assembled and initialized  
     this.App.Main
     
 'the Container is released when it goes out of scope  

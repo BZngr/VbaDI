@@ -19,8 +19,8 @@ Private TS As VbaDITestSupport
 '@ModuleInitialize
 Private Sub ModuleInitialize()
     'this method runs once per module.
-    Set Assert = New Rubberduck.AssertClass 'CreateObject("Rubberduck.AssertClass")
-    Set Fakes = New Rubberduck.FakesProvider 'CreateObject("Rubberduck.FakesProvider")
+    Set Assert = New Rubberduck.AssertClass
+    Set Fakes = New Rubberduck.FakesProvider
     Set TS = New VbaDITestSupport
 End Sub
 
@@ -144,27 +144,27 @@ TestFail:
     Resume TestExit
 End Sub
 
-'@TestMethod("VbaDI.Container.Install")
-Private Sub InstallMany()
+'@TestMethod("VbaDI.Container.Load")
+Private Sub LoadMany()
     On Error GoTo TestFail
     
     'Arrange:
-    Dim xInstaller As VbaDITestInstaller
-    Set xInstaller = New VbaDITestInstaller
+    Dim xLoader As VbaDITestRegistrationLoader
+    Set xLoader = New VbaDITestRegistrationLoader
     
     Dim xSut As IVbaDIContainer
     Set xSut = VbaDI.CreateContainer()
     
-    Dim xInstallers As Collection
-    Set xInstallers = New Collection
-    xInstallers.Add xInstaller
-    xInstallers.Add xInstaller
+    Dim xLoaders As Collection
+    Set xLoaders = New Collection
+    xLoaders.Add xLoader
+    xLoaders.Add xLoader
         
-    xSut.Install xInstallers
+    xSut.RegisterUsingLoader xLoaders
     
     
     'Act:
-    Assert.AreEqual CLng(2), xInstaller.InstallCallsCount
+    Assert.AreEqual CLng(2), xLoader.LoadToContainerCallsCount
 
 TestExit:
     '@Ignore UnhandledOnErrorResumeNext
@@ -176,22 +176,22 @@ TestFail:
     Resume TestExit
 End Sub
 
-'@TestMethod("VbaDI.Container.Install")
-Private Sub InstallSingle()
+'@TestMethod("VbaDI.Container.Load")
+Private Sub LoadSingle()
     On Error GoTo TestFail
     
     'Arrange:
-    Dim xInstaller As VbaDITestInstaller
-    Set xInstaller = New VbaDITestInstaller
+    Dim xLoader As VbaDITestRegistrationLoader
+    Set xLoader = New VbaDITestRegistrationLoader
     
     Dim xSut As IVbaDIContainer
     Set xSut = VbaDI.CreateContainer()
     
-    xSut.Install xInstaller
+    xSut.RegisterUsingLoader xLoader
     
     
     'Act:
-    Assert.AreEqual CLng(1), xInstaller.InstallCallsCount
+    Assert.AreEqual CLng(1), xLoader.LoadToContainerCallsCount
 
 TestExit:
     '@Ignore UnhandledOnErrorResumeNext

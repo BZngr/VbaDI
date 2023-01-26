@@ -39,8 +39,8 @@ Public Property Get IsIVbaDIFluentRegistration() As String
     IsIVbaDIFluentRegistration = "IsIVbaDIFluentRegistration"
 End Property
 
-Public Property Get IsVbaDIInstaller() As String
-    IsVbaDIInstaller = "IsIVbaDIInstaller"
+Public Property Get IsVbaDILoader() As String
+    IsVbaDILoader = "IsIVbaDILoader"
 End Property
 
 Public Property Get IsRegistrationID() As String
@@ -67,8 +67,8 @@ Private Function IVbaDIFunc_Predicate(ByVal pVal As Variant, _
     Select Case this.FuncName
         Case Me.IsIVbaDIFluentRegistration
             IVbaDIFunc_Predicate = TypeOf pVal Is IVbaDIFluentRegistration
-        Case Me.IsVbaDIInstaller
-            IVbaDIFunc_Predicate = TypeOf pVal Is IVbaDIInstaller
+        Case Me.IsVbaDILoader
+            IVbaDIFunc_Predicate = TypeOf pVal Is IVbaDIRegistrationLoader
         Case Me.IsRegistrationID
             On Error GoTo ErrorExit
             IVbaDIFunc_Predicate = Len(CStr(pVal)) > 0
