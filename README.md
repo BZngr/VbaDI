@@ -79,7 +79,7 @@ container.Register VbaDI.ForInterface(TypeName(IRepo)).Use(New AppRepo) _
 
 #### RegistrationLoaders
 
-The registration process can be accomplished by _Loaders_ which are `Class Modules` that implement the single method `IVbaDIRegistrationLoader` interface:
+The registration process can be accomplished by _RegistrationLoaders_ which are `Class Modules` that implement the single method `IVbaDIRegistrationLoader` interface:
 
 ###### IVbaDIRegistrationLoader
 ```vba
@@ -87,7 +87,7 @@ Public Sub LoadToContainer(ByVal pContainer As IVbaDIContainer)
 End Sub
 ```
 
-An example of typical Loader object content:
+An example of typical RegistrationLoader object content:
 ```vba
 Option Explicit
 
@@ -104,7 +104,7 @@ Private Sub IVbaDIRegistrationLoader_LoadToContainer(ByVal pContainer As IVbaDIC
      '... and so on
 End Sub
 ```
-###### Notes regarding Loaders/IVbaDIRegistrationLoader
+###### Notes regarding RegistrationLoaders/IVbaDIRegistrationLoader
 
 1. Using a RegistrationLoader to configure the IoC container is recommended.
 2. One or more RegistrationLoaders can be used to configure a container.
