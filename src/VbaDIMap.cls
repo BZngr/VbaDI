@@ -49,6 +49,10 @@ Public Property Get Self() As VbaDIMap
     Set Self = Me
 End Property
 
+Public Property Get Inner() As Object
+    Set Inner = this.InnerDictionary
+End Property
+
 Public Sub Add(ByVal pKey As Variant, ByVal pValue As Variant)
     this.InnerDictionary.Add pKey, pValue
 End Sub

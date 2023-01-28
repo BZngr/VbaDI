@@ -19,18 +19,14 @@ End Type
 
 Private this As TVbaDIRegistrationBuilder
 
-Private Sub Initialize()
-    If this.Registration Is Nothing Then
-        Set this.Registration = RegistrationCode.CreateRegistrationRecord()
-    End If
+Private Sub Class_Initialize()
+    Set this.Registration = RegistrationCode.CreateRegistrationRecord()
 End Sub
 
 Private Function IVbaDIFluentRegistration_ForInterface( _
     ParamArray pInterfaceIDs() As Variant) As IVbaDIFluentRegistration
     
     Set IVbaDIFluentRegistration_ForInterface = Me
-    
-    Initialize
     
     Dim xInterfaces As Variant
     xInterfaces = ParamArrayCode.RemoveNesting(pInterfaceIDs)
@@ -43,27 +39,23 @@ Private Function IVbaDIFluentRegistration_ForInterface( _
        
 End Function
 
-Private Function IVbaDIFluentRegistration_Use( _
-    ByVal pInstance As Object, _
+Private Function IVbaDIFluentRegistration_Use(ByVal pInstance As Object, _
     Optional ByVal pRegistrationID As String = vbNullString) As IVbaDIFluentRegistration
+    
+    If pInstance Is Nothing Then
+        Err.Raise 5, TypeName(Me), "Object Parameter equals 'Nothing'"
+    End If
     
     Set IVbaDIFluentRegistration_Use = Me
     
-    Initialize
-    
-    If Not this.Registration.Item(VbaDIKey.Instance) Is Nothing Then
+    'The first object instance registered/set 'wins',
+    If Not util.GetElement(this.Registration, VbaDIKey.Instance) Is Nothing Then
         Exit Function
     End If
     
-    Dim xID As String
-    If pRegistrationID <> vbNullString Then
-        xID = pRegistrationID
-    Else
-        xID = TypeName(pInstance)
-    End If
-    
     Set this.Registration.Item(VbaDIKey.Instance) = pInstance
-    this.Registration.Item(VbaDIKey.ObjectID) = xID
+    this.Registration.Item(VbaDIKey.ObjectID) = _
+        RegistrationCode.CreateRegistrationID(pInstance, pRegistrationID)
        
 End Function
 
@@ -71,6 +63,8 @@ Private Function IVbaDIFluentRegistration_DependsOnValue( _
     ByVal pRegistrationID As String, _
     ByVal pValue As Variant) As IVbaDIFluentRegistration
 
+    Set IVbaDIFluentRegistration_DependsOnValue = Me
+    
     Dim xData As VbaDIMap
     Set xData = util.GetElement(this.Registration, VbaDIKey.ValueDependencies)
     
@@ -79,18 +73,20 @@ Private Function IVbaDIFluentRegistration_DependsOnValue( _
             util.SetElement(xData, pRegistrationID, pValue)
     End If
 
-    Set IVbaDIFluentRegistration_DependsOnValue = Me
-
 End Function
 
 Private Function IVbaDIFluentRegistration_AsSingleton() As IVbaDIFluentRegistration
-    Set this.Registration = util.SetElement(this.Registration, VbaDIKey.IsSingleton, True)
+    
     Set IVbaDIFluentRegistration_AsSingleton = Me
+    
+    Set this.Registration = util.SetElement(this.Registration, VbaDIKey.IsSingleton, True)
 End Function
 
 Private Function IVbaDIFluentRegistration_AsTransient() As IVbaDIFluentRegistration
-    Set this.Registration = util.SetElement(this.Registration, VbaDIKey.IsSingleton, False)
+    
     Set IVbaDIFluentRegistration_AsTransient = Me
+    
+    Set this.Registration = util.SetElement(this.Registration, VbaDIKey.IsSingleton, False)
 End Function
 
 Public Function Build() As VbaDIMap
@@ -103,49 +99,39 @@ Public Function Build() As VbaDIMap
             TypeName(Me), _
             "Concrete instance not set"
     End If
-
-    If TypeOf xInstance Is IVbaDIQueryCompose Then
-
-        Dim xValueDependencies As VbaDIMap
-        Set xValueDependencies = util.GetElement( _
-            this.Registration, VbaDIKey.ValueDependencies)
-            
-        Dim xObjectDependencyIDs As Collection
-        Set xObjectDependencyIDs = _
-            GetObjectDependencyIDs(xInstance, xValueDependencies)
-
-        Set this.Registration = util.SetElement( _
-            this.Registration, _
-            VbaDIKey.ObjectDependencyIDs, _
-            xObjectDependencyIDs)
+    
+    If Not TypeOf xInstance Is IVbaDIQueryCompose Then
+        'No dependency requirements published by the class
+        Set Build = this.Registration
+        Exit Function
     End If
 
-    Set Build = this.Registration
-End Function
-
-Private Function GetObjectDependencyIDs(ByVal pQC As IVbaDIQueryCompose, ByVal pValDependencies As VbaDIMap) As Collection
-
-    Set GetObjectDependencyIDs = New Collection
+    'IVbaDIQueryCompose is implemented - get the class' dependencyIDs
+    Dim xQC As IVbaDIQueryCompose
+    Set xQC = xInstance
     
 On Error GoTo ErrorExit
-    Dim xDependencyIDs As Collection
-    Set xDependencyIDs = pQC.RegistrationIDs
+    Dim xAllDependencyIDs As Collection
+    Set xAllDependencyIDs = xQC.RegistrationIDs
 On Error GoTo 0
+    
+    Dim xValueDependenciesMap As VbaDIMap
+    Set xValueDependenciesMap = _
+        util.GetElement(this.Registration, VbaDIKey.ValueDependencies)
+    
+    Dim xClassDependencyIDs As Collection
+    Set xClassDependencyIDs = util.Filter(xAllDependencyIDs, _
+        VbaDIFunc.Create(VbaDIFunc.NotInKeys, xValueDependenciesMap))
+       
+    Set this.Registration = util.SetElement( _
+        this.Registration, VbaDIKey.ObjectDependencyIDs, xClassDependencyIDs)
 
-    Dim xDepID As Variant
-    For Each xDepID In xDependencyIDs
-        If Not util.HasKey(pValDependencies, xDepID) Then
-            GetObjectDependencyIDs.Add CStr(xDepID)
-        End If
-    Next
+    Set Build = this.Registration
     
     Exit Function
     
 ErrorExit:
     VbaDIError.RaiseError VbaDIError.ERROR_GETTING_REGISTRATIONIDS, _
         TypeName(Me), TypeName(Me)
-
-
 End Function
-
 

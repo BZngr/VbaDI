@@ -51,22 +51,12 @@ Public Function GetElement(ByVal pData As VbaDIMap, _
 
 End Function
 
-Public Function HasKey(ByVal pData As Variant, ByVal pKey As String) As Boolean
+Public Function HasKey(ByVal pData As Object, ByVal pKey As String) As Boolean
     
     HasKey = False
     If TypeOf pData Is VbaDIMap Then
         HasKey = pData.Exists(pKey)
         Exit Function
-    End If
-    
-    If TypeOf pData Is Collection Or IsArray(pData) Then
-        Dim xItem As Variant
-        For Each xItem In pData
-            If UCase$(xItem) = UCase$(pKey) Then
-                HasKey = True
-                Exit Function
-            End If
-        Next
     End If
     
 End Function
@@ -135,7 +125,8 @@ Public Function Every(ByVal pColl As Collection, ByVal pFunc As IVbaDIFunc) As B
     Every = True
 End Function
 
-Public Function Concat(ByVal pTarget As Collection, ParamArray pElements() As Variant) As Variant
+'Note: Flattens any Array/Collection found in pElements
+Public Function Concat(ByVal pTarget As Collection, ParamArray pElements() As Variant) As Collection
 
     Dim xElements As Variant
     xElements = ParamArrayCode.RemoveNesting(pElements)
@@ -150,10 +141,6 @@ Public Function Concat(ByVal pTarget As Collection, ParamArray pElements() As Va
     Next
     
     For Each xElement In xElements
-        If TypeOf xElement Is VbaDIMap Then
-            Err.Raise 5, TypeName(Me), "Unable to concat a 'VbaDIMap'"
-        End If
-        
         If TypeOf xElement Is Collection Or IsArray(xElement) Then
             Dim xItem As Variant
             For Each xItem In xElement
@@ -173,16 +160,24 @@ Public Function PickBy(ByVal pMap As VbaDIMap, ByVal pFunc As IVbaDIFunc) As Vba
     Set PickBy = VbaDIMap.Create()
 
     Dim xKey As Variant
-    Dim xValue As Variant
-    
-    For Each xKey In pMap.Keys()
-        
-        ToVariant pMap.Item(xKey), xValue
-        
-        If pFunc.PredicateValueAndKey(xValue, xKey) Then
-            PickBy.Add xKey, xValue
+    For Each xKey In Keys2Collection(pMap)
+        If pFunc.ValueKeyPredicate(pMap.Item(xKey), xKey) Then
+            PickBy.Add CStr(xKey), pMap.Item(xKey)
         End If
     Next
+End Function
+
+Public Function Filter(ByVal pColl As Collection, ByVal pFunc As IVbaDIFunc) As Collection
+
+    Set Filter = New Collection
+    Dim xIdx As Long
+
+    For xIdx = 1 To pColl.Count
+        If pFunc.Predicate(pColl.Item(xIdx), xIdx, pColl) Then
+            Filter.Add pColl.Item(xIdx)
+        End If
+    Next
+    
 End Function
 
 Public Function Map(ByVal pColl As Collection, ByVal pFunc As IVbaDIFunc) As Collection
@@ -195,13 +190,12 @@ Public Function Map(ByVal pColl As Collection, ByVal pFunc As IVbaDIFunc) As Col
     Next
 End Function
 
+Public Function Keys2Collection(ByVal pMap As Object) As Collection
+    Set Keys2Collection = New Collection
+    Dim xItem As Variant
+    For Each xItem In pMap.Keys()
+        Keys2Collection.Add xItem
+    Next
+End Function
 
-'@Ignore ProcedureCanBeWrittenAsFunction
-Private Sub ToVariant(ByVal pSource As Variant, ByRef pResult As Variant)
-    If TypeOf pSource Is Object  Then
-        Set pResult = pSource
-    Else
-        pResult = pSource
-    End If
-End Sub
 

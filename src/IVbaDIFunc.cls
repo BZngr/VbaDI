@@ -11,15 +11,12 @@ Attribute VB_Exposed = False
 '@Folder "VbaDI"
 Option Explicit
 
-Public Function Predicate(ByVal pVal As Variant, ByVal pIndex As Long, ByVal pColl As Collection) As Boolean
-End Function
-
-Public Function PredicateValueAndKey(ByVal pValue As Variant, ByVal pKey As String) As Boolean
+Public Function Predicate(ByVal pVal As Variant, ByVal pIndex As Variant, ByVal pColl As Collection) As Boolean
 End Function
 
 Public Function MapFunc(ByVal pVal As Variant, ByVal pIndex As Long, ByVal pColl As Collection) As Variant
 End Function
 
-'Public Function ValueFunc(ByVal pVal As Variant) As Variant
-'End Function
+Public Function ValueKeyPredicate(ByVal pVal As Variant, ByVal pKey As Variant) As Variant
+End Function
 

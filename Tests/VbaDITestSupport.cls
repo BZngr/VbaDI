@@ -82,13 +82,13 @@ Public Function AddInterfaceID(ByVal pRecord As VbaDIMap, _
 
     Set AddInterfaceID = pRecord
     
-    Dim xCopy As VbaDIMap
-    Set xCopy = util.Assign(VbaDIMap.Create(), pRecord)
+    Dim xRecordCopy As VbaDIMap
+    Set xRecordCopy = util.Assign(VbaDIMap.Create(), pRecord)
     
-    Set xCopy.Item(VbaDIKey.InterfaceIDs) = _
-        util.Concat(xCopy.Item(VbaDIKey.InterfaceIDs), pID)
+    Set xRecordCopy.Item(VbaDIKey.InterfaceIDs) = _
+        util.Concat(xRecordCopy.Item(VbaDIKey.InterfaceIDs), pID)
         
-    Set AddInterfaceID = xCopy
+    Set AddInterfaceID = xRecordCopy
 End Function
 
 Public Function Last(ByVal pArr As Variant) As Variant

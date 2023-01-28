@@ -21,21 +21,22 @@ Public Function CreateRegistrationRecord( _
         Err.Raise 5, TypeName(Me), "Invalid ObjectId for 'Nothing' Instance"
     End If
     
-    Dim xID As String
-    xID = pObjectID
-    If Not pInstance Is Nothing And xID = vbNullString Then
-        xID = TypeName(pInstance)
-    End If
-    
     Set CreateRegistrationRecord = VbaDIMap.Create()
     With CreateRegistrationRecord
         .Add VbaDIKey.Instance, pInstance
-        .Add VbaDIKey.ObjectID, xID
+        .Add VbaDIKey.ObjectID, CreateRegistrationID(pInstance, pObjectID)
         .Add VbaDIKey.ValueDependencies, VbaDIMap.Create()
         .Add VbaDIKey.InterfaceIDs, New Collection
         .Add VbaDIKey.IsSingleton, True
         .Add VbaDIKey.ObjectDependencyIDs, New Collection
     End With
+End Function
+
+Public Function CreateRegistrationID(ByVal pInstance As Object, ByVal pObjectID As String) As String
+    CreateRegistrationID = pObjectID
+    If pObjectID = vbNullString And Not pInstance Is Nothing Then
+        CreateRegistrationID = TypeName(pInstance)
+    End If
 End Function
 
 Public Function CreateRegistration(ByVal pObj As Object) As VbaDIRegistration
@@ -74,7 +75,7 @@ Public Function GetDefaultClassFactory( _
 
 End Function
 
-'Note called from 'Object' rather than explicitly this object
+'Note called from 'Object' (uses duck-typing) rather than explicitly this object
 '@Ignore ProcedureNotUsed
 Public Function CopyUsingNewInstance(ByVal pRegistration As VbaDIRegistration, _
     ByVal pNewInstance As Object) As VbaDIRegistration
@@ -152,17 +153,22 @@ Public Function MergeRegistration( _
     Set xMergedRecord = _
         util.SetElement(xMergedRecord, VbaDIKey.InterfaceIDs, xInterfaceIDs)
     
-    Dim xVDs As VbaDIMap
-    Set xVDs = util.GetElement(xMergedRecord, VbaDIKey.ValueDependencies)
+    Dim xExistingValuesMap As VbaDIMap
+    Set xExistingValuesMap = _
+        util.GetElement(xMergedRecord, VbaDIKey.ValueDependencies)
+    
+    Dim xValueIDsToMerge As Collection
+    Set xValueIDsToMerge = util.Filter( _
+        util.Keys2Collection(pRegistrationToMerge.ValueDependencies), _
+        VbaDIFunc.Create(VbaDIFunc.NotInKeys, xExistingValuesMap))
     
     Dim xID As Variant
-    For Each xID In pRegistrationToMerge.ValueDependencies.Keys()
-        If Not util.HasKey(xVDs, xID) Then
-            xVDs.Add xID, pRegistrationToMerge.ValueDependencies.Item(xID)
-        End If
+    For Each xID In xValueIDsToMerge
+        xExistingValuesMap.Add xID, pRegistrationToMerge.ValueDependencies.Item(xID)
     Next
+    
     Set xMergedRecord = _
-        util.SetElement(xMergedRecord, VbaDIKey.ValueDependencies, xVDs)
+        util.SetElement(xMergedRecord, VbaDIKey.ValueDependencies, xExistingValuesMap)
     
     Set MergeRegistration = Me.CreateRegistration(xMergedRecord)
     
@@ -172,8 +178,6 @@ Public Function AddInterfaceIDs(ByVal pReg As VbaDIMap, _
     ByVal pIDs As Collection) As VbaDIMap
 
     With VbaDIFunc
-        'Note: False Positive
-        '@Ignore ArgumentWithIncompatibleObjectType
         If Not util.Every(pIDs, .Create(.IsRegistrationID)) Then
             VbaDIError.RaiseError _
                 VbaDIError.ERROR_INVALID_REGISTRATION_ID, _

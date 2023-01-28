@@ -347,4 +347,35 @@ TestFail:
     End If
 End Sub
 
+'@TestMethod("VbaDI.Container.Register")
+Private Sub FirstRegistrationWins()
+    On Error GoTo TestFail
+    
+    'Arrange:
+    Dim xExpectedID As Long
+    xExpectedID = 1000
+    Dim xFluentReg As IVbaDIFluentRegistration
+    Set xFluentReg = VbaDI.Instance(TS.CreateVbaDITestObject(xExpectedID))
+    
+    'Act:
+    Set xFluentReg = xFluentReg.Use(TS.CreateVbaDITestObject(xExpectedID + 10))
+    
+    Dim xSut As VbaDIRegistration
+    Set xSut = RegistrationCode.CreateRegistration(xFluentReg)
+    
+    'Assert:
+    Dim xObj As VbaDITestObject
+    Set xObj = xSut.Instance
+    Assert.AreEqual CStr(xExpectedID), xObj.InstanceID
+
+TestExit:
+    '@Ignore UnhandledOnErrorResumeNext
+    On Error Resume Next
+    
+    Exit Sub
+TestFail:
+    Assert.Fail "Test raised an error: #" & Err.Number & " - " & Err.Description
+    Resume TestExit
+End Sub
+
 

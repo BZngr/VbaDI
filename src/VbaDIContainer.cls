@@ -67,8 +67,7 @@ End Sub
 
 Private Sub LoadImpl(ByVal pLoaders As Collection)
     
-    If Not util.Every(pLoaders, _
-        VbaDIFunc.Create(VbaDIFunc.IsVbaDILoader)) Then
+    If Not util.Every(pLoaders, VbaDIFunc.Create(VbaDIFunc.IsVbaDILoader)) Then
         
         Err.Raise 5, TypeName(Me), _
             "Invalid Collection element: must be IVbaDIRegistrationsLoader instance"
@@ -80,15 +79,17 @@ Private Sub LoadImpl(ByVal pLoaders As Collection)
     Next
 End Sub
 
-Private Function IVbaDIContainer_Resolve(ByVal pRegistrationID As String) As Object
+Private Function IVbaDIContainer_Resolve( _
+    ByVal pRegistrationID As String) As Object
     
 On Error GoTo ResolutionErrorExit
 
     Set IVbaDIContainer_Resolve = _
         this.Resolver.Resolve(this.Data, pRegistrationID)
     
-    Exit Function
 On Error GoTo 0
+    Exit Function
+
 ResolutionErrorExit:
     If Not VbaDIError.IsVbaDIError(Err.Number) Then
         VbaDIError.RaiseError VbaDIError.ERROR_RESOLVING_OBJECT, _

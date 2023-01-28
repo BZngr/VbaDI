@@ -17,10 +17,7 @@ Attribute RemoveNesting.VB_Description = "Removes nesting levels caused by forwa
     
     'Calling this function adds one nesting level, so remove the
     'added level before evaluating the candidate
-    Dim xArrCandidate As Variant
-    xArrCandidate = util.First(pParamArray)
-    
-    RemoveNesting = RemoveNestingLevel(xArrCandidate)
+    RemoveNesting = RemoveNestingLevel(util.First(pParamArray))
     
 End Function
 
