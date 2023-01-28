@@ -25,9 +25,9 @@ VbaDI is an Windows Excel VBA add-in (.xlam) that provides an Inversion of Contr
 
 ### IoC Container process flow
 
-1. [Register](https://github.com/BZngr/VbaDI/README.md#register) classes, interfaces, and configuration values with the Container.
-2. [Resolve](https://github.com/BZngr/VbaDI/README.md#resolve) the application's object graph.  Compose registered classes with their dependencies. 
-3. [Release](https://github.com/BZngr/VbaDI/README.md#release) the Container and its object references.
+1. [Register](https://github.com/BZngr/VbaDI/#register) classes, interfaces, and configuration values with the Container.
+2. [Resolve](https://github.com/BZngr/VbaDI/#resolve) the application's object graph.  Compose registered classes with their dependencies. 
+3. [Release](https://github.com/BZngr/VbaDI/#release) the Container and its object references.
 
 This process flow is referred to as the [_Register -> Resolve -> Release_](https://blog.ploeh.dk/2010/09/29/TheRegisterResolveReleasepattern/) pattern:
 
@@ -72,7 +72,7 @@ container.Register VbaDI.ForInterface(TypeName(IRepo)).Use(New AppRepo) _
 
 ##### Notes regarding IVbaDIFluentRegistration and the _Register_ phase
 
-1. Classes, Interface assignments, and Value dependencies are identified by [RegistrationIDs](https://github.com/BZngr/VbaDI/README.md#registrationids).
+1. Classes, Interface assignments, and Value dependencies are identified by [RegistrationIDs](https://github.com/BZngr/VbaDI/#registrationids).
 2. The first registered RegistrationID/Instance pair is the only RegistrationID/Instance pair cached by the Container.
 3. The first registration of an interface or an object value dependency _wins_.  Subsequent registrations are ignored.
 4. If a class has no dependencies, but _is_ a dependency of another registered class, then it needs to be registered with the container.
@@ -187,7 +187,7 @@ End Sub
 ```
 ###### IVbaDIQueryCompose Notes: 
 
-1. Class, Interface and Value dependencies are identified by [RegistrationIDs](https://github.com/BZngr/VbaDI/README.md#registrationids).
+1. Class, Interface and Value dependencies are identified by [RegistrationIDs](https://github.com/BZngr/VbaDI/#registrationids).
 2. `IVbaDIQueryCompose.RegistrationIDs` is analogous to the C# example's constructor parameter list. 
 3. `IVbaDIQueryCompose.ComposeObject` is analogous to the C# example's constructor function body.
 4. If a class has no object, interface, or value dependencies, the developer can: 
@@ -217,7 +217,7 @@ The VbaDI container supports two object lifestyles: SINGLETON and TRANSIENT.
 ### RegistrationIDs
 
 1. RegistrationIDs are unique `String` keys to identify classes, interfaces, and values.
-2. RegistrationIDs are used/relevant only during the [Registration](https://github.com/BZngr/VbaDI/README.md#register) and [Resolve](https://github.com/BZngr/VbaDI/README.md#resolve) phases.
+2. RegistrationIDs are used/relevant only during the [Registration](https://github.com/BZngr/VbaDI/#register) and [Resolve](https://github.com/BZngr/VbaDI/#resolve) phases.
 3. Object instances are registered using functions with an optional RegistrationID parameter.
     - If the optional RegistrationID parameter is not specified, the RegistrationID is set equal to `TypeName(<object instance>)`.
     - The optional parameter is provided to support user-defined RegistrationIDs. 
