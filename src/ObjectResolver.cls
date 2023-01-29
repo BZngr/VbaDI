@@ -104,7 +104,7 @@ Private Function ResolveTransient(ByVal pData As VbaDIData, _
 
     'Even with no object dependencies, call 'Compose' to load
     'any value dependencies and execute initialization code
-    If Not util.HasAny(xTransientRegistration.ObjectDependencyIDs) Then
+    If Not util.Some(xTransientRegistration.ObjectDependencyIDs) Then
         Set ResolveTransient = ComposeObject(xTransientRegistration)
         Exit Function
     End If
@@ -120,57 +120,73 @@ Private Function ResolveInstance(ByVal pData As VbaDIData, _
     
     'Even with no object dependencies, call 'Compose' to load
     'any value dependencies and execute initialization code
-    If Not util.HasAny(pRegistration.ObjectDependencyIDs) Then
+    If Not util.Some(pRegistration.ObjectDependencyIDs) Then
         Set ResolveInstance = ComposeObject(pRegistration)
         Exit Function
     End If
     
-    Dim xRegistrationByDependencyID As VbaDIMap
-    Set xRegistrationByDependencyID = VbaDIMap.Create()
+    Dim xRegistrationByDependencyID As Object
+    Set xRegistrationByDependencyID = util.CreateDictionary()
     
     Dim xID As Variant
     For Each xID In pRegistration.ObjectDependencyIDs
         xRegistrationByDependencyID.Add xID, VbaDICode.GetRegistration(pData, xID)
     Next
     
-    Dim xSingletonDependencies As VbaDIMap
-    Dim xTransientDependencies As VbaDIMap
+    Dim xSingletonDependencies As Object
+    Dim xTransientDependencies As Object
     LoadDependencyMaps pData, xRegistrationByDependencyID, _
         xSingletonDependencies, xTransientDependencies
         
-    Dim xAllObjectDependencies As VbaDIMap
-    Set xAllObjectDependencies = _
-        util.Assign(VbaDIMap.Create(), xSingletonDependencies, _
-            xTransientDependencies)
+    Dim xAllObjectDependencies As Object
+    Set xAllObjectDependencies = util.Assign( _
+        util.CreateDictionary(), _
+        xSingletonDependencies, _
+        xTransientDependencies)
     
     Set ResolveInstance = ComposeObject(pRegistration, xAllObjectDependencies)
 End Function
 
 Private Sub LoadDependencyMaps(ByVal pData As VbaDIData, _
-    ByVal pRegistrationByDependencyID As VbaDIMap, _
-    ByRef pSingletons As VbaDIMap, _
-    ByRef pTransient As VbaDIMap)
-
-    Set pSingletons = _
-        ResolveSingletonObjectDependencyIDs(pData, _
-            util.PickBy(pRegistrationByDependencyID, _
-                VbaDIFunc.Create(VbaDIFunc.IsSingleton)))
+    ByVal pRegistrationByDependencyID As Object, _
+    ByRef pSingletonDependencies As Object, _
+    ByRef pTransientDependencies As Object)
     
-    Set pTransient = _
-        ResolveTransientObjectDependencyIDs(pData, _
-            util.PickBy(pRegistrationByDependencyID, _
-                VbaDIFunc.Create(VbaDIFunc.IsTransient)))
+    Dim xSingletonRecords As Object
+    Set xSingletonRecords = GetDependenciesMap(pRegistrationByDependencyID, VbaDIFunc.IsSingleton)
+
+    Set pSingletonDependencies = _
+        ResolveSingletonObjectDependencyIDs(pData, xSingletonRecords)
+    
+    Dim xTransientRecords As Object
+    Set xTransientRecords = GetDependenciesMap(pRegistrationByDependencyID, VbaDIFunc.IsTransient)
+
+    Set pTransientDependencies = _
+        ResolveTransientObjectDependencyIDs(pData, xTransientRecords)
 End Sub
 
+Private Function GetDependenciesMap( _
+    ByVal pRegistrationByDependencyIDs As Object, _
+    ByVal pFuncName As String) As Object
+    
+    Dim xRecordsMap As Object
+    Set xRecordsMap = util.PickBy(pRegistrationByDependencyIDs, _
+        VbaDIFunc.Create(pFuncName))
+
+    Set GetDependenciesMap = xRecordsMap
+
+End Function
+
 Private Function ComposeObject(ByVal pRegistration As VbaDIRegistration, _
-    Optional ByVal pObjectDependencies As VbaDIMap = Nothing) As Object
+    Optional ByVal pObjectDependencies As Object = Nothing) As Object
     
     Set ComposeObject = pRegistration.Instance
     
-    Dim xObjDependencies As VbaDIMap
-    Set xObjDependencies = VbaDIMap.Create()
+    Dim xObjDependencies As Object
     If Not pObjectDependencies Is Nothing Then
         Set xObjDependencies = pObjectDependencies
+    Else
+        Set xObjDependencies = util.CreateDictionary()
     End If
     
     If Not TypeOf pRegistration.Instance Is IVbaDIQueryCompose Then
@@ -198,13 +214,13 @@ End Function
 
 Private Function ResolveSingletonObjectDependencyIDs( _
     ByVal pData As VbaDIData, _
-    ByVal pRegistrationByObjectIDs As VbaDIMap) As VbaDIMap
+    ByVal pRegistrationByObjectIDs As Object) As Object
 
     Dim xDepReg As VbaDIRegistration
     Dim xResolvedDependency As Object
 
-    Dim xResolvedDependencies As VbaDIMap
-    Set xResolvedDependencies = VbaDIMap.Create()
+    Dim xResolvedDependencies As Object
+    Set xResolvedDependencies = util.CreateDictionary()
 
     Dim xID As Variant
     For Each xID In pRegistrationByObjectIDs.Keys()
@@ -233,13 +249,13 @@ End Function
 
 Private Function ResolveTransientObjectDependencyIDs( _
     ByVal pData As VbaDIData, _
-    ByVal pRegistrationByObjectIDs As VbaDIMap) As VbaDIMap
+    ByVal pRegistrationByObjectIDs As Object) As Object
         
     Dim xDepReg As VbaDIRegistration
     Dim xResolvedDependency As Variant
     
-    Dim xResolvedDependencies As VbaDIMap
-    Set xResolvedDependencies = VbaDIMap.Create()
+    Dim xResolvedDependencies As Object
+    Set xResolvedDependencies = util.CreateDictionary()
     
     Dim xID As Variant
     For Each xID In pRegistrationByObjectIDs.Keys()

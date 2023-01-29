@@ -82,7 +82,7 @@ Public Property Get CreateRegistration() As String
 End Property
 
 Private Function IVbaDIFunc_Predicate(ByVal pVal As Variant, _
-    ByVal pIndex As Variant, ByVal pColl As Collection) As Boolean
+    ByVal pIndex As Variant, ByVal pColl As Variant) As Boolean
     
     IVbaDIFunc_Predicate = False
     

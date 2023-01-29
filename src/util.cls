@@ -14,17 +14,24 @@ Attribute VB_Description = "Stateless utilities object"
 
 Option Explicit
 
+Private Const TYPENAME_DICTIONARY As String = "Dictionary"
+
+'For Case-sensitive use VbCompareMethod.vbBinaryCompare (0)
+'Default is Case-insensitive comparisons (1)
+Private Const DEFAULT_COMPARE_METHOD As Long = VbCompareMethod.vbTextCompare
+
+
 Public Function SetElement(ByVal pData As Object, _
     ByVal pKey As String, ByVal pVal As Variant) As Object
     
-    If Not TypeOf pData Is VbaDIMap Then
+    If Not IsDictionary(pData) Then
         Err.Raise 5, TypeName(Me), "Invalid Object Type"
     End If
         
     Set SetElement = pData
     
-    Dim xCopy As VbaDIMap
-    Set xCopy = Assign(VbaDIMap.Create(), pData)
+    Dim xCopy As Object
+    Set xCopy = Assign(CreateDictionary(), pData)
     If Not HasKey(pData, pKey) Then
         xCopy.Add pKey, pVal
     Else
@@ -38,8 +45,10 @@ Public Function SetElement(ByVal pData As Object, _
     Set SetElement = xCopy
 End Function
 
-Public Function GetElement(ByVal pData As VbaDIMap, _
+Public Function GetElement(ByVal pData As Object, _
     ByVal pKey As String) As Variant
+    
+    Set GetElement = Nothing
     
     If HasKey(pData, pKey) Then
         If IsObject(pData.Item(pKey)) Then
@@ -54,32 +63,16 @@ End Function
 Public Function HasKey(ByVal pData As Object, ByVal pKey As String) As Boolean
     
     HasKey = False
-    If TypeOf pData Is VbaDIMap Then
+    If IsDictionary(pData) Then
         HasKey = pData.Exists(pKey)
-        Exit Function
     End If
     
 End Function
 
-Public Function HasAny(ByVal pData As Variant) As Boolean
-    
-    HasAny = False
-    
-    If TypeOf pData Is VbaDIMap Or TypeOf pData Is Collection Then
-        HasAny = pData.Count > 0
-        Exit Function
-    End If
-    
-    If IsArray(pData) Then
-        HasAny = Not UBound(pData, 1) < LBound(pData, 1)
-    End If
+Public Function Assign(ByVal pTarget As Object, _
+    ParamArray pDictionaries() As Variant) As Object
 
-End Function
-
-Public Function Assign(ByVal pTarget As VbaDIMap, _
-    ParamArray pDictionaries() As Variant) As VbaDIMap
-
-    Dim xDict As VbaDIMap
+    Dim xDict As Object
     Dim xKey As Variant
     Dim xItem As Variant
     For Each xItem In pDictionaries
@@ -111,16 +104,83 @@ Public Function First(ByVal pArr As Variant) As Variant
     End If
 End Function
 
-Public Function Every(ByVal pColl As Collection, ByVal pFunc As IVbaDIFunc) As Boolean
-
-    Every = False
+Public Function Some(ByVal pData As Variant, Optional ByVal pFunc As IVbaDIFunc = Nothing) As Boolean
+    
+    Some = False
     Dim xIdx As Long
-
-    For xIdx = 1 To pColl.Count
-        If Not pFunc.Predicate(pColl.Item(xIdx), xIdx, pColl) Then
+    
+   If TypeOf pData Is Collection Then
+        If pData.Count = 0 Then
             Exit Function
         End If
-    Next
+        
+        If Not pFunc Is Nothing Then
+            For xIdx = 1 To pData.Count
+                If pFunc.Predicate(pData.Item(xIdx), xIdx, pData) Then
+                    Some = True
+                    Exit Function
+                End If
+            Next
+        End If
+        
+        Some = True
+        Exit Function
+    End If
+    
+    If IsArray(pData) Then
+        If IsEmptyArray(pData) Then
+            Exit Function
+        End If
+
+        If Not pFunc Is Nothing Then
+            For xIdx = LBound(pData, 1) To UBound(pData, 1)
+                If pFunc.Predicate(pData(xIdx), xIdx, pData) Then
+                    Some = True
+                    Exit Function
+                End If
+            Next
+        End If
+    End If
+
+End Function
+
+Public Function Every(ByVal pData As Variant, Optional ByVal pFunc As IVbaDIFunc = Nothing) As Boolean
+
+    Every = False
+    
+    If TypeOf pData Is Collection Then
+        If pData.Count = 0 Then
+            Every = True
+            Exit Function
+        End If
+        
+        If Not pFunc Is Nothing Then
+            Dim xIdx As Long
+            For xIdx = 1 To pData.Count
+                If Not pFunc.Predicate(pData.Item(xIdx), xIdx, pData) Then
+                    Exit Function
+                End If
+            Next
+            Every = True
+        End If
+        Exit Function
+    End If
+    
+    If IsArray(pData) Then
+        If IsEmptyArray(pData) Then
+            Every = True
+            Exit Function
+        End If
+
+        If Not pFunc Is Nothing Then
+            For xIdx = LBound(pData, 1) To UBound(pData, 1)
+                If Not pFunc.Predicate(pData(xIdx), xIdx, pData) Then
+                    Exit Function
+                End If
+            Next
+            Every = True
+        End If
+    End If
     
     Every = True
 End Function
@@ -155,9 +215,9 @@ Public Function Concat(ByVal pTarget As Collection, ParamArray pElements() As Va
     
 End Function
 
-Public Function PickBy(ByVal pMap As VbaDIMap, ByVal pFunc As IVbaDIFunc) As VbaDIMap
+Public Function PickBy(ByVal pMap As Object, ByVal pFunc As IVbaDIFunc) As Object
 
-    Set PickBy = VbaDIMap.Create()
+    Set PickBy = CreateDictionary()
 
     Dim xKey As Variant
     For Each xKey In Keys2Collection(pMap)
@@ -197,5 +257,33 @@ Public Function Keys2Collection(ByVal pMap As Object) As Collection
         Keys2Collection.Add xItem
     Next
 End Function
+
+Private Function IsDictionary(ByVal pObj As Object) As Boolean
+    IsDictionary = TypeName(pObj) = TYPENAME_DICTIONARY
+End Function
+
+'Private Function CreateDictionary() As Object
+'    Set CreateDictionary = CreateObject("Scripting.Dictionary")
+'    CreateDictionary.CompareMode = 1
+'End Function
+
+Private Function IsEmptyArray(ByVal pData As Variant) As Boolean
+    IsEmptyArray = UBound(pData, 1) < LBound(pData, 1)
+End Function
+
+Public Function CreateDictionary(Optional ByVal pCompareMethod As Long = DEFAULT_COMPARE_METHOD) As Object
+        
+    'Excludes vbDatabaseCompare (2) as a valid value
+    If Not (pCompareMethod = VbCompareMethod.vbBinaryCompare Or pCompareMethod = VbCompareMethod.vbTextCompare) Then
+        Err.Raise 5, TypeName(Me), "Invalid Compare method value: " & (CStr(pCompareMethod))
+    End If
+    
+    Set CreateDictionary = CreateObject("Scripting.Dictionary")
+    
+    CreateDictionary.CompareMode = IIf(pCompareMethod <> DEFAULT_COMPARE_METHOD, _
+        pCompareMethod, DEFAULT_COMPARE_METHOD)
+            
+End Function
+
 
 

@@ -603,8 +603,8 @@ Private Sub MultiLevelDependenciesWithProvidedObjectIDs()
     
     'Arrange:
        
-    Dim xTestObjMap As VbaDIMap
-    Set xTestObjMap = VbaDIMap.Create()
+    Dim xTestObjMap As Object
+    Set xTestObjMap = util.CreateDictionary()
     
     Dim xTestObjNum As Long
     
@@ -982,9 +982,6 @@ Private Sub ValueDependencySurvivesAfterNextRegistration()
     Dim xSut As IVbaDIContainer
     Set xSut = VbaDI.CreateContainer()
     
-    'Dim xVDs As Variant
-    'Set xVDs = util.GetElement(, VbaDIKey.ValueDependencies)
-
     'Act:
     xSut.Register xReg1, xReg2
     
@@ -1014,14 +1011,14 @@ Private Sub MergeRegistrationCopiesValueDependencies()
     'Arrange:
     Dim xReg As VbaDIRegistration
     
-    Dim xRecord1 As VbaDIMap
+    Dim xRecord1 As Object
     Set xRecord1 = RegistrationCode.CreateRegistrationRecord(New VbaDITestObject, "TestObject")
     Set xRecord1 = TS.AddInterfaceID(xRecord1, "ISomething")
     Set xReg = RegistrationCode.CreateRegistration(xRecord1)
     
     Dim xReg2 As VbaDIRegistration
     
-    Dim xRecord2 As VbaDIMap
+    Dim xRecord2 As Object
     Set xRecord2 = RegistrationCode.CreateRegistrationRecord(New VbaDITestObject, "TestObject2")
     Set xRecord2 = TS.AddInterfaceID(xRecord2, "ISomething")
     Set xReg2 = RegistrationCode.CreateRegistration(xRecord2)
@@ -1067,7 +1064,7 @@ Private Sub MergeRegistrationMergesValueDependencies()
     'Arrange:
     Dim xReg As VbaDIRegistration
     
-    Dim xRecord1 As VbaDIMap
+    Dim xRecord1 As Object
     Set xRecord1 = RegistrationCode.CreateRegistrationRecord(New VbaDITestObject, "TestObject")
     Set xRecord1 = TS.AddInterfaceID(xRecord1, "ISomething")
     Set xReg = RegistrationCode.CreateRegistration(xRecord1)
@@ -1079,7 +1076,7 @@ Private Sub MergeRegistrationMergesValueDependencies()
     
     Dim xReg2 As VbaDIRegistration
     
-    Dim xRecord2 As VbaDIMap
+    Dim xRecord2 As Object
     Set xRecord2 = RegistrationCode.CreateRegistrationRecord(New VbaDITestObject, "TestObject2")
     Set xRecord2 = TS.AddInterfaceID(xRecord2, "ISomething")
     Set xReg2 = RegistrationCode.CreateRegistration(xRecord2)
@@ -1126,7 +1123,7 @@ Private Sub MergeRegistrationNoRepeatedDependencyIDs()
     'Arrange:
     Dim xReg As VbaDIRegistration
     
-    Dim xRecord1 As VbaDIMap
+    Dim xRecord1 As Object
     Set xRecord1 = RegistrationCode.CreateRegistrationRecord(New VbaDITestObject, "TestObject")
     Set xRecord1 = TS.AddInterfaceID(xRecord1, "ISomething")
     Set xReg = RegistrationCode.CreateRegistration(xRecord1)
@@ -1134,7 +1131,7 @@ Private Sub MergeRegistrationNoRepeatedDependencyIDs()
     Set xReg = TS.AddValueDependency(xReg, "FirstKey", "FirstVal")
     
     Dim xReg2 As VbaDIRegistration
-    Dim xRecord2 As VbaDIMap
+    Dim xRecord2 As Object
     Set xRecord2 = RegistrationCode.CreateRegistrationRecord(New VbaDITestObject, "TestObject2")
     Set xRecord2 = TS.AddInterfaceID(xRecord2, "ISomething")
     Set xReg2 = RegistrationCode.CreateRegistration(xRecord2)

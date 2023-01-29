@@ -23,11 +23,11 @@ Public Function AddValueDependency(ByVal pRegistration As VbaDIRegistration, _
     ByVal pValueID As String, _
     ByVal pValue As Variant) As VbaDIRegistration
 
-    Dim xNewRecord As VbaDIMap
-    Set xNewRecord = util.Assign(VbaDIMap.Create(), pRegistration.AsRecord)
+    Dim xNewRecord As Object
+    Set xNewRecord = util.Assign(util.CreateDictionary(), pRegistration.AsRecord)
     
-    Dim xVD As VbaDIMap
-    Set xVD = util.Assign(VbaDIMap.Create(), util.GetElement(xNewRecord, VbaDIKey.ValueDependencies))
+    Dim xVD As Object
+    Set xVD = util.Assign(util.CreateDictionary(), util.GetElement(xNewRecord, VbaDIKey.ValueDependencies))
     If Not xVD.Exists(pValueID) Then
         Set xVD = util.SetElement(xVD, pValueID, pValue)
     End If
@@ -77,13 +77,13 @@ Public Function CopyUsingNewInstance( _
     Set CopyUsingNewInstance = xCopy
 End Function
 
-Public Function AddInterfaceID(ByVal pRecord As VbaDIMap, _
-    ByVal pID As String) As VbaDIMap
+Public Function AddInterfaceID(ByVal pRecord As Object, _
+    ByVal pID As String) As Object
 
     Set AddInterfaceID = pRecord
     
-    Dim xRecordCopy As VbaDIMap
-    Set xRecordCopy = util.Assign(VbaDIMap.Create(), pRecord)
+    Dim xRecordCopy As Object
+    Set xRecordCopy = util.Assign(util.CreateDictionary(), pRecord)
     
     Set xRecordCopy.Item(VbaDIKey.InterfaceIDs) = _
         util.Concat(xRecordCopy.Item(VbaDIKey.InterfaceIDs), pID)

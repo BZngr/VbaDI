@@ -11,7 +11,7 @@ Attribute VB_Exposed = False
 '@Folder "VbaDI"
 Option Explicit
 
-Public Function Predicate(ByVal pVal As Variant, ByVal pIndex As Variant, ByVal pColl As Collection) As Boolean
+Public Function Predicate(ByVal pVal As Variant, ByVal pIndex As Variant, ByVal pColl As Variant) As Boolean
 End Function
 
 Public Function MapFunc(ByVal pVal As Variant, ByVal pIndex As Long, ByVal pColl As Collection) As Variant

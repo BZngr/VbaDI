@@ -18,16 +18,14 @@ Implements IVbaDIDefaultFactory
 
 Implements IVbaDIQueryCompose
 
-'Implements IVbaDIRegistration
-
 Private Type TVbaDITestObject
     InstanceID As String
     ObjectID As String
     Loader As VbaDITestRegistrationLoader
     ValueDependencies As Collection
-    InjectedValueDependencies As VbaDIMap
+    InjectedValueDependencies As Object
     ObjectIDDependencies As Collection
-    InjectedObjectID2Object As VbaDIMap
+    InjectedObjectID2Object As Object
     GetDependencyIDsCount As Long
     InjectDependenciesCount As Long
     CauseErrorDuringCompose As Boolean
@@ -41,8 +39,8 @@ Private Sub Class_Initialize()
     this.ObjectID = TypeName(Me)
     Set this.ValueDependencies = New Collection
     Set this.ObjectIDDependencies = New Collection
-    Set this.InjectedObjectID2Object = VbaDIMap.Create()
-    Set this.InjectedValueDependencies = VbaDIMap.Create()
+    Set this.InjectedObjectID2Object = util.CreateDictionary()
+    Set this.InjectedValueDependencies = util.CreateDictionary()
 End Sub
 
 Private Property Get IVbaDIQueryCompose_RegistrationIDs() As Collection

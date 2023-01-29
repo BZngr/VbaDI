@@ -15,17 +15,17 @@ Option Explicit
 
 Public Function CreateRegistrationRecord( _
     Optional ByVal pInstance As Object = Nothing, _
-    Optional ByVal pObjectID As String = vbNullString) As VbaDIMap
+    Optional ByVal pObjectID As String = vbNullString) As Object
     
     If pInstance Is Nothing And pObjectID <> vbNullString Then
         Err.Raise 5, TypeName(Me), "Invalid ObjectId for 'Nothing' Instance"
     End If
     
-    Set CreateRegistrationRecord = VbaDIMap.Create()
+    Set CreateRegistrationRecord = util.CreateDictionary()
     With CreateRegistrationRecord
         .Add VbaDIKey.Instance, pInstance
         .Add VbaDIKey.ObjectID, CreateRegistrationID(pInstance, pObjectID)
-        .Add VbaDIKey.ValueDependencies, VbaDIMap.Create()
+        .Add VbaDIKey.ValueDependencies, util.CreateDictionary()
         .Add VbaDIKey.InterfaceIDs, New Collection
         .Add VbaDIKey.IsSingleton, True
         .Add VbaDIKey.ObjectDependencyIDs, New Collection
@@ -41,8 +41,8 @@ End Function
 
 Public Function CreateRegistration(ByVal pObj As Object) As VbaDIRegistration
 
-    Dim xData As VbaDIMap
-    If TypeOf pObj Is VbaDIMap Then
+    Dim xData As Object
+    If IsDictionary(pObj) Then
         Set xData = pObj
     ElseIf TypeOf pObj Is IVbaDIFluentRegistration Then
         Dim xBuilder As VbaDIRegistrationRecordBuilder
@@ -51,15 +51,15 @@ Public Function CreateRegistration(ByVal pObj As Object) As VbaDIRegistration
     End If
     
     Set CreateRegistration = New VbaDIRegistration
-    CreateRegistration.SetRecord xData
+    CreateRegistration.SetRecord xData '.Inner
 End Function
 
 Public Function IsDependencyFree( _
     ByVal pRegistration As VbaDIRegistration) As Boolean
     
     IsDependencyFree = Not TypeOf pRegistration.Instance Is IVbaDIQueryCompose _
-        Or Not (util.HasAny(pRegistration.ObjectDependencyIDs) _
-            Or util.HasAny(pRegistration.ValueDependencies))
+        Or Not (util.Some(pRegistration.ObjectDependencyIDs) _
+            Or util.Some(pRegistration.ValueDependencies))
 End Function
 
 Public Function GetDefaultClassFactory( _
@@ -82,8 +82,8 @@ Public Function CopyUsingNewInstance(ByVal pRegistration As VbaDIRegistration, _
     
     Set CopyUsingNewInstance = pRegistration
     
-    Dim xNewRecord As VbaDIMap
-    Set xNewRecord = util.Assign(VbaDIMap.Create(), pRegistration.AsRecord)
+    Dim xNewRecord As Object
+    Set xNewRecord = util.Assign(util.CreateDictionary(), pRegistration.AsRecord)
     
     Set xNewRecord = _
         util.SetElement(xNewRecord, VbaDIKey.Instance, pNewInstance)
@@ -92,14 +92,14 @@ Public Function CopyUsingNewInstance(ByVal pRegistration As VbaDIRegistration, _
     
 End Function
 
-Public Function InsertRegistration(ByVal RegistrationsByObjectID As VbaDIMap, _
-    ByVal pNewReg As VbaDIRegistration) As VbaDIMap
+Public Function InsertRegistration(ByVal pRegistrationsByObjectID As Object, _
+    ByVal pNewReg As VbaDIRegistration) As Object
     
-    Set InsertRegistration = RegistrationsByObjectID
+    Set InsertRegistration = pRegistrationsByObjectID
     
-    Dim xRegistrationsByObjectID As VbaDIMap
+    Dim xRegistrationsByObjectID As Object
     Set xRegistrationsByObjectID = _
-        util.Assign(VbaDIMap.Create(), RegistrationsByObjectID)
+        util.Assign(util.CreateDictionary(), pRegistrationsByObjectID)
         
     If Not util.HasKey(xRegistrationsByObjectID, pNewReg.ObjectID) Then
         Set xRegistrationsByObjectID = _
@@ -128,7 +128,7 @@ Public Function InsertRegistration(ByVal RegistrationsByObjectID As VbaDIMap, _
     Set InsertRegistration = xRegistrationsByObjectID
 End Function
 
-Public Function GetRegistration(ByVal pData As VbaDIMap, _
+Public Function GetRegistration(ByVal pData As Object, _
     ByVal pKey As String) As VbaDIRegistration
     
     Set GetRegistration = Nothing
@@ -141,9 +141,9 @@ Public Function MergeRegistration( _
     ByVal pExistingRegistration As VbaDIRegistration, _
     ByVal pRegistrationToMerge As VbaDIRegistration) As VbaDIRegistration
            
-    Dim xMergedRecord As VbaDIMap
+    Dim xMergedRecord As Object
     Set xMergedRecord = _
-        util.Assign(VbaDIMap.Create(), pExistingRegistration.AsRecord)
+        util.Assign(util.CreateDictionary(), pExistingRegistration.AsRecord)
     
     Dim xInterfaceIDs As Collection
     Set xInterfaceIDs = util.Concat( _
@@ -153,7 +153,7 @@ Public Function MergeRegistration( _
     Set xMergedRecord = _
         util.SetElement(xMergedRecord, VbaDIKey.InterfaceIDs, xInterfaceIDs)
     
-    Dim xExistingValuesMap As VbaDIMap
+    Dim xExistingValuesMap As Object
     Set xExistingValuesMap = _
         util.GetElement(xMergedRecord, VbaDIKey.ValueDependencies)
     
@@ -174,8 +174,8 @@ Public Function MergeRegistration( _
     
 End Function
 
-Public Function AddInterfaceIDs(ByVal pReg As VbaDIMap, _
-    ByVal pIDs As Collection) As VbaDIMap
+Public Function AddInterfaceIDs(ByVal pReg As Object, _
+    ByVal pIDs As Collection) As Object
 
     With VbaDIFunc
         If Not util.Every(pIDs, .Create(.IsRegistrationID)) Then
@@ -189,12 +189,15 @@ Public Function AddInterfaceIDs(ByVal pReg As VbaDIMap, _
     Set xIDs = _
         util.Concat(pReg.Item(VbaDIKey.InterfaceIDs), pIDs)
     
-    Dim xRegCopy As VbaDIMap
-    Set xRegCopy = util.Assign(VbaDIMap.Create(), pReg)
+    Dim xRegCopy As Object
+    Set xRegCopy = util.Assign(util.CreateDictionary(), pReg)
     
     Set AddInterfaceIDs = _
         util.SetElement(xRegCopy, VbaDIKey.InterfaceIDs, xIDs)
     
 End Function
 
+Public Function IsDictionary(ByVal pObj As Object) As Boolean
+    IsDictionary = TypeName(pObj) = "Dictionary"
+End Function
 

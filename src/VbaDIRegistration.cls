@@ -13,16 +13,16 @@ Attribute VB_Description = "Wraps record of a registered application object"
 Option Explicit
 
 Private Type TVbaDIRegistration
-    Record As VbaDIMap
+    Record As Object
 End Type
 
 Private this As TVbaDIRegistration
 
-Public Sub SetRecord(ByVal pRegistrationRecord As VbaDIMap)
+Public Sub SetRecord(ByVal pRegistrationRecord As Object)
     Set this.Record = pRegistrationRecord
 End Sub
 
-Public Property Get AsRecord() As VbaDIMap
+Public Property Get AsRecord() As Object
     Set AsRecord = this.Record
 End Property
 
@@ -34,7 +34,7 @@ Public Property Get ObjectID() As String
     ObjectID = util.GetElement(this.Record, VbaDIKey.ObjectID)
 End Property
 
-Public Property Get ValueDependencies() As VbaDIMap
+Public Property Get ValueDependencies() As Object
     Set ValueDependencies = _
         util.GetElement(this.Record, VbaDIKey.ValueDependencies)
 End Property

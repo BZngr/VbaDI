@@ -48,8 +48,8 @@ Private Sub AddInterfaceIDsArray()
     Dim xSut As IVbaDIFluentRegistration
     Set xSut = VbaDI.Instance(New VbaDITestObject)
     
-    Dim xExpected As VbaDIMap
-    Set xExpected = VbaDIMap.Create()
+    Dim xExpected As Object
+    Set xExpected = util.CreateDictionary()
     With xExpected
         .Add "One", 1
         .Add "Two", 2
@@ -87,8 +87,8 @@ Private Sub AddInterfaceIDsCollection()
     Dim xSut As IVbaDIFluentRegistration
     Set xSut = VbaDI.Instance(New VbaDITestObject)
     
-    Dim xExpected As VbaDIMap
-    Set xExpected = VbaDIMap.Create()
+    Dim xExpected As Object
+    Set xExpected = util.CreateDictionary()
     With xExpected
         .Add "One", 1
         .Add "Two", 2
@@ -246,6 +246,7 @@ TestFail:
     Assert.Fail "Test raised an error: #" & Err.Number & " - " & Err.Description
     Resume TestExit
 End Sub
+
 '@TestMethod("VbaDI.VbaDIRegistrationBuilder")
 Private Sub SetLifestyleBeforeInstance()
     On Error GoTo TestFail

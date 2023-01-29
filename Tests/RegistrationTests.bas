@@ -355,10 +355,12 @@ Private Sub FirstRegistrationWins()
     Dim xExpectedID As Long
     xExpectedID = 1000
     Dim xFluentReg As IVbaDIFluentRegistration
-    Set xFluentReg = VbaDI.Instance(TS.CreateVbaDITestObject(xExpectedID))
+    Set xFluentReg = _
+        VbaDI.Instance(TS.CreateVbaDITestObject(xExpectedID)).AsSingleton()
     
     'Act:
-    Set xFluentReg = xFluentReg.Use(TS.CreateVbaDITestObject(xExpectedID + 10))
+    Set xFluentReg = _
+        xFluentReg.Use(TS.CreateVbaDITestObject(xExpectedID + 10)).AsSingleton()
     
     Dim xSut As VbaDIRegistration
     Set xSut = RegistrationCode.CreateRegistration(xFluentReg)

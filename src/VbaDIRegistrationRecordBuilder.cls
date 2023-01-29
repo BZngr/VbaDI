@@ -14,7 +14,7 @@ Option Explicit
 Implements IVbaDIFluentRegistration
 
 Private Type TVbaDIRegistrationBuilder
-    Registration As VbaDIMap
+    Registration As Object
 End Type
 
 Private this As TVbaDIRegistrationBuilder
@@ -65,7 +65,7 @@ Private Function IVbaDIFluentRegistration_DependsOnValue( _
 
     Set IVbaDIFluentRegistration_DependsOnValue = Me
     
-    Dim xData As VbaDIMap
+    Dim xData As Object
     Set xData = util.GetElement(this.Registration, VbaDIKey.ValueDependencies)
     
     If Not util.HasKey(xData, pRegistrationID) Then
@@ -79,17 +79,19 @@ Private Function IVbaDIFluentRegistration_AsSingleton() As IVbaDIFluentRegistrat
     
     Set IVbaDIFluentRegistration_AsSingleton = Me
     
-    Set this.Registration = util.SetElement(this.Registration, VbaDIKey.IsSingleton, True)
+    Set this.Registration = _
+        util.SetElement(this.Registration, VbaDIKey.IsSingleton, True)
 End Function
 
 Private Function IVbaDIFluentRegistration_AsTransient() As IVbaDIFluentRegistration
     
     Set IVbaDIFluentRegistration_AsTransient = Me
     
-    Set this.Registration = util.SetElement(this.Registration, VbaDIKey.IsSingleton, False)
+    Set this.Registration = _
+        util.SetElement(this.Registration, VbaDIKey.IsSingleton, False)
 End Function
 
-Public Function Build() As VbaDIMap
+Public Function Build() As Object
 
     Dim xInstance As Object
     Set xInstance = util.GetElement(this.Registration, VbaDIKey.Instance)
@@ -107,6 +109,7 @@ Public Function Build() As VbaDIMap
     End If
 
     'IVbaDIQueryCompose is implemented - get the class' dependencyIDs
+    
     Dim xQC As IVbaDIQueryCompose
     Set xQC = xInstance
     
@@ -115,7 +118,7 @@ On Error GoTo ErrorExit
     Set xAllDependencyIDs = xQC.RegistrationIDs
 On Error GoTo 0
     
-    Dim xValueDependenciesMap As VbaDIMap
+    Dim xValueDependenciesMap As Object
     Set xValueDependenciesMap = _
         util.GetElement(this.Registration, VbaDIKey.ValueDependencies)
     
@@ -134,4 +137,5 @@ ErrorExit:
     VbaDIError.RaiseError VbaDIError.ERROR_GETTING_REGISTRATIONIDS, _
         TypeName(Me), TypeName(Me)
 End Function
+
 

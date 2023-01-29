@@ -13,8 +13,8 @@ Attribute VB_Description = "Stateless object supporting VbaDI operations"
 '@ModuleDescription "Stateless object supporting VbaDI operations"
 Option Explicit
 
-Public Function InsertRegistration(ByVal pRegistrationsByObjectID As VbaDIMap, _
-    ByVal pNewReg As VbaDIRegistration) As VbaDIMap
+Public Function InsertRegistration(ByVal pRegistrationsByObjectID As Object, _
+    ByVal pNewReg As VbaDIRegistration) As Object
 
     Set InsertRegistration = pRegistrationsByObjectID
 
@@ -24,27 +24,29 @@ Public Function InsertRegistration(ByVal pRegistrationsByObjectID As VbaDIMap, _
 End Function
 
 Public Function InsertInterfaceIDsForObjectID( _
-    ByVal pObjectIDsByInterfaceID As VbaDIMap, _
-    ByVal pRegistration As VbaDIRegistration) As VbaDIMap
+    ByVal pObjectIDsByInterfaceID As Object, _
+    ByVal pRegistration As VbaDIRegistration) As Object
     
     Set InsertInterfaceIDsForObjectID = pObjectIDsByInterfaceID
     
     If pRegistration.InterfaceIDs.Count > 0 Then
-        Dim xCopy As VbaDIMap
-        Set xCopy = util.Assign(VbaDIMap.Create(), pObjectIDsByInterfaceID)
+        Dim xObj As Object
+        Set xObj = util.Assign(util.CreateDictionary(), pObjectIDsByInterfaceID)
+        
         Dim xItf As Variant
         For Each xItf In pRegistration.InterfaceIDs
-            If Not util.HasKey(xCopy, xItf) Then
-                Set xCopy = _
-                    util.SetElement(xCopy, xItf, pRegistration.ObjectID)
+            If Not util.HasKey(xObj, xItf) Then
+                Set xObj = util.SetElement(xObj, xItf, pRegistration.ObjectID)
             End If
         Next
-        Set InsertInterfaceIDsForObjectID = xCopy
+        Set InsertInterfaceIDsForObjectID = xObj
     End If
 End Function
 
 Public Function GetRegistration(ByVal pData As VbaDIData, _
     ByVal pRegistrationID As String) As VbaDIRegistration
+    
+    Set GetRegistration = Nothing
     
     With pData
         If util.HasKey(.RegistrationsByObjectID, pRegistrationID) Then
@@ -55,23 +57,24 @@ Public Function GetRegistration(ByVal pData As VbaDIData, _
             Set GetRegistration = RegistrationCode.GetRegistration( _
                 .RegistrationsByObjectID, _
                 util.GetElement(.ObjectIDsByInterfaceID, pRegistrationID))
-        Else
-            VbaDIError.RaiseError VbaDIError.ERROR_ELEMENT_NOT_REGISTERED, _
-                TypeName(Me), pRegistrationID
         End If
     End With
+    
+    If GetRegistration Is Nothing Then
+        VbaDIError.RaiseError VbaDIError.ERROR_ELEMENT_NOT_REGISTERED, _
+            TypeName(Me), pRegistrationID
+    End If
 End Function
 
-
 Public Function CacheResolvedInstance( _
-    ByVal pResolvedSingletonsByRegistrationID As VbaDIMap, _
-    ByVal pRegistration As VbaDIRegistration) As VbaDIMap
+    ByVal pResolvedSingletonsByRegistrationID As Object, _
+    ByVal pRegistration As VbaDIRegistration) As Object
     
     Set CacheResolvedInstance = pResolvedSingletonsByRegistrationID
     
-    Dim xUpdatedCache As VbaDIMap
+    Dim xUpdatedCache As Object
     Set xUpdatedCache = _
-        util.Assign(VbaDIMap.Create(), pResolvedSingletonsByRegistrationID)
+        util.Assign(util.CreateDictionary(), pResolvedSingletonsByRegistrationID)
     
     Dim xID As Variant
     For Each xID In util.Concat( _
@@ -83,4 +86,5 @@ Public Function CacheResolvedInstance( _
             
     Set CacheResolvedInstance = xUpdatedCache
 End Function
+
 

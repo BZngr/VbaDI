@@ -16,8 +16,8 @@ Option Explicit
 Implements IVbaDIDependencyProvider
 
 Private Type TVbaDIDependencyProvider
-    ValueDependencies As VbaDIMap
-    ObjectDependencies As VbaDIMap
+    ValueDependencies As Object
+    ObjectDependencies As Object
 End Type
 
 Private this As TVbaDIDependencyProvider
@@ -26,11 +26,11 @@ Public Property Get Self() As VbaDIDependencyProvider
     Set Self = Me
 End Property
 
-Public Sub SetDependencies(ByVal pValueDependencies As VbaDIMap, _
-    ByVal pObjectDependencies As VbaDIMap)
+Public Sub SetDependencies(ByVal pValueDependencies As Object, _
+    ByVal pObjectDependencies As Object)
     
-    Set this.ValueDependencies = util.Assign(VbaDIMap.Create(), pValueDependencies)
-    Set this.ObjectDependencies = util.Assign(VbaDIMap.Create(), pObjectDependencies)
+    Set this.ValueDependencies = util.Assign(util.CreateDictionary(), pValueDependencies)
+    Set this.ObjectDependencies = util.Assign(util.CreateDictionary(), pObjectDependencies)
 End Sub
 
 Public Function ObjectFor(ByVal pDependencyID As Variant) As Object

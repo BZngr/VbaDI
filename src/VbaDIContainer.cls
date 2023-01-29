@@ -48,11 +48,12 @@ Private Sub RegisterImpl(ByVal pIRegistrations As Collection)
             "Invalid Collection element: must be IVbaDIFluentRegistration instance"
     End If
     
-    Dim xNewReg As VbaDIRegistration
-    
-    For Each xNewReg In util.Map(pIRegistrations, _
+    Dim xNewRegs As Collection
+    Set xNewRegs = util.Map(pIRegistrations, _
         VbaDIFunc.Create(VbaDIFunc.CreateRegistration))
         
+    Dim xNewReg As VbaDIRegistration
+    For Each xNewReg In xNewRegs
         Set this.Data.RegistrationsByObjectID = _
             VbaDICode.InsertRegistration(this.Data.RegistrationsByObjectID, xNewReg)
             

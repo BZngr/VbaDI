@@ -29,7 +29,7 @@ Private Enum EVbaDIError
 End Enum
 
 Private Type TVbaDIErrors
-    EnumToFormatString As VbaDIMap
+    EnumToFormatString As Object
     PrintToImmediate As Boolean
 End Type
 
@@ -37,7 +37,7 @@ Private this As TVbaDIErrors
 
 Private Sub Class_Initialize()
     this.PrintToImmediate = True
-    Set this.EnumToFormatString = VbaDIMap.Create()
+    Set this.EnumToFormatString = CreateObject("Scripting.Dictionary")
     With this.EnumToFormatString
         .Add ElementNotRegistered, "'{0}' not registered"
         
