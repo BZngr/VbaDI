@@ -11,18 +11,29 @@ Attribute VB_Exposed = False
 '@PredeclaredId
 Option Explicit
 
-Implements IVbaDIFunc
+Implements IVDFunc
+
+Public Enum EVbaDIFunc
+    IsIVbaDIFluentRegistration = 2023
+    IsVbaDILoader
+    IsRegistrationID
+    IsSingleton
+    IsTransient
+    NotInKeysOf
+    CreateRegistration
+End Enum
 
 Private Type TVbaDIFunc
-    FuncName As String
+    FuncID As Long
     FuncContext As Variant
+    FuncIDToName As Object
 End Type
 
 Private this As TVbaDIFunc
 
-Public Function Create(ByVal pFuncName As String, Optional ByVal pFuncContext As Variant = Empty) As IVbaDIFunc
+Public Function Fn(ByVal pFuncID As EVbaDIFunc, Optional ByVal pFuncContext As Variant = Empty) As IVDFunc
     With New VbaDIFunc
-        .FuncName = pFuncName
+        .FuncID = pFuncID
         If Not IsEmpty(pFuncContext) Then
             If TypeOf pFuncContext Is Object  Then
                 Set .FuncContext = pFuncContext
@@ -30,7 +41,7 @@ Public Function Create(ByVal pFuncName As String, Optional ByVal pFuncContext As
                 .FuncContext = pFuncContext
             End If
         End If
-        Set Create = .Self
+        Set Fn = .Self
     End With
 End Function
 
@@ -39,8 +50,8 @@ Public Property Get Self() As Object
 End Property
 
 '@Ignore WriteOnlyProperty
-Public Property Let FuncName(ByVal RHS As String)
-    this.FuncName = RHS
+Public Property Let FuncID(ByVal RHS As Long)
+    this.FuncID = RHS
 End Property
 
 '@Ignore WriteOnlyProperty
@@ -53,98 +64,97 @@ Public Property Set FuncContext(ByVal RHS As Variant)
     Set this.FuncContext = RHS
 End Property
 
-Public Property Get IsIVbaDIFluentRegistration() As String
-    IsIVbaDIFluentRegistration = "IsIVbaDIFluentRegistration"
-End Property
-
-Public Property Get IsVbaDILoader() As String
-    IsVbaDILoader = "IsIVbaDILoader"
-End Property
-
-Public Property Get IsRegistrationID() As String
-    IsRegistrationID = "IsRegistrationID"
-End Property
-
-Public Property Get IsSingleton() As String
-    IsSingleton = "IsSingleton"
-End Property
-
-Public Property Get IsTransient() As String
-    IsTransient = "IsTransient"
-End Property
-
-Public Property Get NotInKeys() As String
-    NotInKeys = "NotInKeys"
-End Property
-
-Public Property Get CreateRegistration() As String
-    CreateRegistration = "CreateRegistration"
-End Property
-
-Private Function IVbaDIFunc_Predicate(ByVal pVal As Variant, _
-    ByVal pIndex As Variant, ByVal pColl As Variant) As Boolean
+Private Function IVDFunc_Predicate(ByVal pVal As Variant, _
+    ByVal pIndex As Variant, ByVal pContainer As Variant) As Boolean
     
-    IVbaDIFunc_Predicate = False
+    IVDFunc_Predicate = False
     
-    Select Case this.FuncName
-        Case Me.IsIVbaDIFluentRegistration
-            IVbaDIFunc_Predicate = TypeOf pVal Is IVbaDIFluentRegistration
-        Case Me.IsVbaDILoader
-            IVbaDIFunc_Predicate = TypeOf pVal Is IVbaDIRegistrationLoader
-        Case Me.IsRegistrationID
+    Select Case this.FuncID
+        Case IsIVbaDIFluentRegistration
+            IVDFunc_Predicate = TypeOf pVal Is IVbaDIFluentRegistration
+        Case IsVbaDILoader
+            IVDFunc_Predicate = TypeOf pVal Is IVbaDIRegistrationLoader
+        Case IsRegistrationID
             On Error GoTo ErrorExit
-            IVbaDIFunc_Predicate = Len(CStr(pVal)) > 0
+            IVDFunc_Predicate = Len(CStr(pVal)) > 0
             On Error GoTo 0
-        Case Me.NotInKeys
-            IVbaDIFunc_Predicate = Not this.FuncContext.Exists(pVal)
+        Case NotInKeysOf 'Not in Keys of the FuncContext
+            IVDFunc_Predicate = Not util.HasKey(this.FuncContext, pVal)
         Case Else
-            Err.Raise 5, TypeName(Me), "Unsupported FuncName: " & this.FuncName
+            Err.Raise 5, TypeName(Me), "Unsupported IVDFunc_Predicate: " & _
+                GetFuncName(this.FuncID)
     End Select
     
     Exit Function
 ErrorExit:
 End Function
 
-Private Function IVbaDIFunc_MapFunc(ByVal pVal As Variant, _
-    ByVal pIndex As Long, ByVal pColl As Collection) As Variant
+Private Function IVDFunc_MapFunc(ByVal pVal As Variant, _
+    ByVal pIndex As Long, ByVal pContainer As Variant) As Variant
 
     Dim xResult As Variant
 
-    Select Case this.FuncName
-        Case Me.CreateRegistration
+    Select Case this.FuncID
+        Case CreateRegistration
             Set xResult = RegistrationCode.CreateRegistration(pVal)
         Case Else
-            Err.Raise 5, TypeName(Me), "Unsupported FuncName: " & this.FuncName
+            Err.Raise 5, TypeName(Me), "Unsupported IVDFunc_MapFunc: " & _
+                GetFuncName(this.FuncID)
       End Select
     
-    Set IVbaDIFunc_MapFunc = xResult
+    Set IVDFunc_MapFunc = xResult
 
 End Function
 
-Private Function IVbaDIFunc_ValueKeyPredicate(ByVal pVal As Variant, _
+Private Function IVDFunc_ValueKeyPredicate(ByVal pValue As Variant, _
     ByVal pKey As Variant) As Variant
 
-    IVbaDIFunc_ValueKeyPredicate = Empty
+    IVDFunc_ValueKeyPredicate = Empty
     
-    Select Case this.FuncName
-        Case Me.IsSingleton
-            ValidateIsVbaDIRegistration pVal
-            IVbaDIFunc_ValueKeyPredicate = pVal.IsSingleton
-        Case Me.IsTransient
-            ValidateIsVbaDIRegistration pVal
-            IVbaDIFunc_ValueKeyPredicate = Not pVal.IsSingleton
+    Select Case this.FuncID
+        Case IsSingleton
+            If TypeOf pValue Is VbaDIRegistration Then
+                IVDFunc_ValueKeyPredicate = pValue.IsSingleton
+            End If
+        Case IsTransient
+            If TypeOf pValue Is VbaDIRegistration Then
+                IVDFunc_ValueKeyPredicate = Not pValue.IsSingleton
+            End If
+        Case NotInKeysOf 'Not in Keys of the FuncContext
+            IVDFunc_ValueKeyPredicate = Not util.HasKey(this.FuncContext, pValue)
         Case Else
-            Err.Raise 5, TypeName(Me), "Unsupported FuncName: " & this.FuncName
+            Err.Raise 5, TypeName(Me), "Unsupported IVDFunc_ValueKeyPredicate: " & _
+                GetFuncName(this.FuncID)
       End Select
 
 End Function
 
-Private Sub ValidateIsVbaDIRegistration(ByVal pValue As Variant)
-    If TypeOf pValue Is VbaDIRegistration Then
+Private Function GetFuncName(ByVal pID As Long) As String
+    
+    InitializeFuncNamesMap
+    
+    GetFuncName = "Unknown"
+    If this.FuncIDToName.Exists(pID) Then
+        GetFuncName = this.FuncIDToName.Item(pID)
+    End If
+End Function
+
+Private Sub InitializeFuncNamesMap()
+
+    If Not this.FuncIDToName Is Nothing Then
         Exit Sub
     End If
     
-    Err.Raise 5, TypeName(Me), "Invalid parameter Type"
+    Set this.FuncIDToName = CreateObject("Scripting.Dictionary")
+    With this.FuncIDToName
+        .Add IsIVbaDIFluentRegistration, "IsIVbaDIFluentRegistration"
+        .Add IsVbaDILoader, "IsVbaDILoader"
+        .Add IsRegistrationID, "IsRegistrationID"
+        .Add IsSingleton, "IsSingleton"
+        .Add IsTransient, "IsTransient"
+        .Add NotInKeysOf, "NotInKeysOf"
+        .Add CreateRegistration, "CreateRegistration"
+    End With
+    
 End Sub
-
 

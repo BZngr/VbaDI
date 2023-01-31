@@ -104,7 +104,7 @@ Public Function First(ByVal pArr As Variant) As Variant
     End If
 End Function
 
-Public Function Some(ByVal pData As Variant, Optional ByVal pFunc As IVbaDIFunc = Nothing) As Boolean
+Public Function Some(ByVal pData As Variant, Optional ByVal pFunc As IVDFunc = Nothing) As Boolean
     
     Some = False
     Dim xIdx As Long
@@ -144,7 +144,7 @@ Public Function Some(ByVal pData As Variant, Optional ByVal pFunc As IVbaDIFunc 
 
 End Function
 
-Public Function Every(ByVal pData As Variant, Optional ByVal pFunc As IVbaDIFunc = Nothing) As Boolean
+Public Function Every(ByVal pData As Variant, Optional ByVal pFunc As IVDFunc = Nothing) As Boolean
 
     Every = False
     
@@ -215,32 +215,60 @@ Public Function Concat(ByVal pTarget As Collection, ParamArray pElements() As Va
     
 End Function
 
-Public Function PickBy(ByVal pMap As Object, ByVal pFunc As IVbaDIFunc) As Object
+Public Function PickBy(ByVal pMap As Object, ByVal pFunc As IVDFunc) As Object
 
     Set PickBy = CreateDictionary()
 
     Dim xKey As Variant
-    For Each xKey In Keys2Collection(pMap)
+    For Each xKey In pMap.Keys
         If pFunc.ValueKeyPredicate(pMap.Item(xKey), xKey) Then
             PickBy.Add CStr(xKey), pMap.Item(xKey)
         End If
     Next
 End Function
 
-Public Function Filter(ByVal pColl As Collection, ByVal pFunc As IVbaDIFunc) As Collection
+Public Function Filter(ByVal pColl As Variant, ByVal pFunc As IVDFunc) As Collection
 
     Set Filter = New Collection
     Dim xIdx As Long
-
-    For xIdx = 1 To pColl.Count
-        If pFunc.Predicate(pColl.Item(xIdx), xIdx, pColl) Then
-            Filter.Add pColl.Item(xIdx)
-        End If
-    Next
+    If TypeOf pColl Is Collection Then
+    
+        For xIdx = 1 To pColl.Count
+            If pFunc.Predicate(pColl.Item(xIdx), xIdx, pColl) Then
+                Filter.Add pColl.Item(xIdx)
+            End If
+        Next
+        Exit Function
+    End If
+    
+    If IsArray(pColl) Then
+        For xIdx = LBound(pColl, 1) To UBound(pColl, 1)
+            If pFunc.Predicate(pColl(xIdx), xIdx, pColl) Then
+                Filter.Add pColl(xIdx)
+            End If
+            Exit Function
+        Next
+    End If
+    
+    If IsDictionary(pColl) Then
+        Dim xResult As Object
+        Set xResult = CreateDictionary()
+        For xIdx = 1 To pColl.Count
+            Dim xT As Variant
+            Dim xArr As Variant
+            xArr = pColl.Keys
+            xT = xArr(xIdx - 1)
+            If pFunc.Predicate(pColl.Item(xT), xT, pColl) Then
+                xResult.Add xT, pColl.Item(xT)
+            End If
+        Next
+        Filter.Add xResult
+        Exit Function
+    End If
     
 End Function
 
-Public Function Map(ByVal pColl As Collection, ByVal pFunc As IVbaDIFunc) As Collection
+Public Function Map(ByVal pColl As Collection, ByVal pFunc As IVDFunc) As Collection
     
     Set Map = New Collection
     
@@ -250,22 +278,12 @@ Public Function Map(ByVal pColl As Collection, ByVal pFunc As IVbaDIFunc) As Col
     Next
 End Function
 
-Public Function Keys2Collection(ByVal pMap As Object) As Collection
-    Set Keys2Collection = New Collection
-    Dim xItem As Variant
-    For Each xItem In pMap.Keys()
-        Keys2Collection.Add xItem
-    Next
+Private Function IsDictionary(ByVal pObj As Variant) As Boolean
+    IsDictionary = False
+    If TypeOf pObj Is Object  Then
+        IsDictionary = TypeName(pObj) = TYPENAME_DICTIONARY
+    End If
 End Function
-
-Private Function IsDictionary(ByVal pObj As Object) As Boolean
-    IsDictionary = TypeName(pObj) = TYPENAME_DICTIONARY
-End Function
-
-'Private Function CreateDictionary() As Object
-'    Set CreateDictionary = CreateObject("Scripting.Dictionary")
-'    CreateDictionary.CompareMode = 1
-'End Function
 
 Private Function IsEmptyArray(ByVal pData As Variant) As Boolean
     IsEmptyArray = UBound(pData, 1) < LBound(pData, 1)
@@ -284,6 +302,5 @@ Public Function CreateDictionary(Optional ByVal pCompareMethod As Long = DEFAULT
         pCompareMethod, DEFAULT_COMPARE_METHOD)
             
 End Function
-
 
 

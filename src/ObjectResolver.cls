@@ -153,13 +153,13 @@ Private Sub LoadDependencyMaps(ByVal pData As VbaDIData, _
     ByRef pTransientDependencies As Object)
     
     Dim xSingletonRecords As Object
-    Set xSingletonRecords = GetDependenciesMap(pRegistrationByDependencyID, VbaDIFunc.IsSingleton)
+    Set xSingletonRecords = GetDependenciesMap(pRegistrationByDependencyID, IsSingleton)
 
     Set pSingletonDependencies = _
         ResolveSingletonObjectDependencyIDs(pData, xSingletonRecords)
     
     Dim xTransientRecords As Object
-    Set xTransientRecords = GetDependenciesMap(pRegistrationByDependencyID, VbaDIFunc.IsTransient)
+    Set xTransientRecords = GetDependenciesMap(pRegistrationByDependencyID, IsTransient)
 
     Set pTransientDependencies = _
         ResolveTransientObjectDependencyIDs(pData, xTransientRecords)
@@ -167,11 +167,11 @@ End Sub
 
 Private Function GetDependenciesMap( _
     ByVal pRegistrationByDependencyIDs As Object, _
-    ByVal pFuncName As String) As Object
+    ByVal pFuncID As EVbaDIFunc) As Object
     
     Dim xRecordsMap As Object
     Set xRecordsMap = util.PickBy(pRegistrationByDependencyIDs, _
-        VbaDIFunc.Create(pFuncName))
+        VbaDIFunc.Fn(pFuncID))
 
     Set GetDependenciesMap = xRecordsMap
 

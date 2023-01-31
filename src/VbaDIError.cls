@@ -15,7 +15,7 @@ Attribute VB_Description = "Object supporting VbaDI custom errors and error mess
 Option Explicit
 
 Private Enum EVbaDIError
-    [_FirstErrorMinusOne] = vbObjectError + 12345
+    [_FirstErrorMinusOne] = vbObjectError + 2023
     ElementNotRegistered
     IVbaDIDefaultFactoryNotImplemented
     DependencyIDNotRequested

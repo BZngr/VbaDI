@@ -124,7 +124,7 @@ On Error GoTo 0
     
     Dim xClassDependencyIDs As Collection
     Set xClassDependencyIDs = util.Filter(xAllDependencyIDs, _
-        VbaDIFunc.Create(VbaDIFunc.NotInKeys, xValueDependenciesMap))
+        VbaDIFunc.Fn(EVbaDIFunc.NotInKeysOf, xValueDependenciesMap))
        
     Set this.Registration = util.SetElement( _
         this.Registration, VbaDIKey.ObjectDependencyIDs, xClassDependencyIDs)

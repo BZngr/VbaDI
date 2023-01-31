@@ -42,7 +42,7 @@ End Sub
 Private Sub RegisterImpl(ByVal pIRegistrations As Collection)
        
     If Not util.Every(pIRegistrations, _
-        VbaDIFunc.Create(VbaDIFunc.IsIVbaDIFluentRegistration)) Then
+        VbaDIFunc.Fn(IsIVbaDIFluentRegistration)) Then
         
         Err.Raise 5, TypeName(Me), _
             "Invalid Collection element: must be IVbaDIFluentRegistration instance"
@@ -50,7 +50,7 @@ Private Sub RegisterImpl(ByVal pIRegistrations As Collection)
     
     Dim xNewRegs As Collection
     Set xNewRegs = util.Map(pIRegistrations, _
-        VbaDIFunc.Create(VbaDIFunc.CreateRegistration))
+        VbaDIFunc.Fn(EVbaDIFunc.CreateRegistration))
         
     Dim xNewReg As VbaDIRegistration
     For Each xNewReg In xNewRegs
@@ -68,7 +68,7 @@ End Sub
 
 Private Sub LoadImpl(ByVal pLoaders As Collection)
     
-    If Not util.Every(pLoaders, VbaDIFunc.Create(VbaDIFunc.IsVbaDILoader)) Then
+    If Not util.Every(pLoaders, VbaDIFunc.Fn(EVbaDIFunc.IsVbaDILoader)) Then
         
         Err.Raise 5, TypeName(Me), _
             "Invalid Collection element: must be IVbaDIRegistrationsLoader instance"

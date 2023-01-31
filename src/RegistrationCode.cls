@@ -157,18 +157,14 @@ Public Function MergeRegistration( _
     Set xExistingValuesMap = _
         util.GetElement(xMergedRecord, VbaDIKey.ValueDependencies)
     
-    Dim xValueIDsToMerge As Collection
-    Set xValueIDsToMerge = util.Filter( _
-        util.Keys2Collection(pRegistrationToMerge.ValueDependencies), _
-        VbaDIFunc.Create(VbaDIFunc.NotInKeys, xExistingValuesMap))
+    Dim xMergeValuesMap As Object
+    Set xMergeValuesMap = util.Assign( _
+        xExistingValuesMap, _
+        util.PickBy(pRegistrationToMerge.ValueDependencies, _
+            VbaDIFunc.Fn(EVbaDIFunc.NotInKeysOf, xExistingValuesMap)))
     
-    Dim xID As Variant
-    For Each xID In xValueIDsToMerge
-        xExistingValuesMap.Add xID, pRegistrationToMerge.ValueDependencies.Item(xID)
-    Next
-    
-    Set xMergedRecord = _
-        util.SetElement(xMergedRecord, VbaDIKey.ValueDependencies, xExistingValuesMap)
+    Set xMergedRecord = util.SetElement( _
+        xMergedRecord, VbaDIKey.ValueDependencies, xMergeValuesMap)
     
     Set MergeRegistration = Me.CreateRegistration(xMergedRecord)
     
@@ -177,13 +173,11 @@ End Function
 Public Function AddInterfaceIDs(ByVal pReg As Object, _
     ByVal pIDs As Collection) As Object
 
-    With VbaDIFunc
-        If Not util.Every(pIDs, .Create(.IsRegistrationID)) Then
-            VbaDIError.RaiseError _
-                VbaDIError.ERROR_INVALID_REGISTRATION_ID, _
-                TypeName(Me)
-        End If
-    End With
+    If Not util.Every(pIDs, VbaDIFunc.Fn(EVbaDIFunc.IsRegistrationID)) Then
+        VbaDIError.RaiseError _
+            VbaDIError.ERROR_INVALID_REGISTRATION_ID, _
+            TypeName(Me)
+    End If
     
     Dim xIDs As Collection
     Set xIDs = _
@@ -200,4 +194,5 @@ End Function
 Public Function IsDictionary(ByVal pObj As Object) As Boolean
     IsDictionary = TypeName(pObj) = "Dictionary"
 End Function
+
 
