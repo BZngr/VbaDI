@@ -17,7 +17,7 @@ Attribute RemoveNesting.VB_Description = "Removes nesting levels caused by forwa
     
     'Calling this function adds one nesting level, so remove the
     'added level before evaluating the candidate
-    RemoveNesting = RemoveNestingLevel(util.First(pParamArray))
+    RemoveNesting = RemoveNestingLevel(First(pParamArray))
     
 End Function
 
@@ -31,7 +31,7 @@ Private Function RemoveNestingLevel(ByVal pArr As Variant) As Variant
         Exit Function
     End If
     
-    RemoveNestingLevel = RemoveNesting(util.First(xArrCandidate))
+    RemoveNestingLevel = RemoveNesting(First(xArrCandidate))
         
 End Function
 
@@ -56,7 +56,7 @@ Private Function IsInitialParamArray(ByVal pArr As Variant) As Boolean
 
     'Finding any value/object in the first position
     'indicates that the initial ParamArray content has been reached
-    If Not IsArray(util.First(pArr)) Then
+    If Not IsArray(First(pArr)) Then
         IsInitialParamArray = True
     End If
 
@@ -89,3 +89,16 @@ On Error GoTo NoDimension
     
 NoDimension:
 End Function
+
+Private Function First(ByVal pArr As Variant) As Variant
+    
+    Dim xIndex As Long
+    xIndex = LBound(pArr, 1)
+    
+    If TypeOf pArr(xIndex) Is Object  Then
+        Set First = pArr(xIndex)
+    Else
+        First = pArr(xIndex)
+    End If
+End Function
+
