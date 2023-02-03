@@ -8,77 +8,63 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 '@PredeclaredId
-'@Folder("VbaDI")
+'@Folder("ParamArrayCode")
 Option Explicit
 
-'@Description "Removes nesting levels caused by forwarding a ParamArray as the ParamArray parameter one or more times"
-Public Function RemoveNesting(ParamArray pParamArray() As Variant) As Variant
-Attribute RemoveNesting.VB_Description = "Removes nesting levels caused by forwarding a ParamArray as the ParamArray parameter one or more times"
-    
-    'Calling this function adds one nesting level, so remove the
-    'added level before evaluating the candidate
-    RemoveNesting = RemoveNestingLevel(First(pParamArray))
-    
-End Function
+'Note:
+'If the initial ParamArray contains a single 1-D array,
+'ParamArrayCode.Flatten returns the contained array
+'rather than an array containing a 1-D array
 
-Private Function RemoveNestingLevel(ByVal pArr As Variant) As Variant
+'@Description "Returns an Array free of extra 'layers' caused by forwarding a ParamArray as the sole ParamArray argument"
+Public Function Flatten( _
+    ParamArray pParamArray() As Variant) As Variant
+Attribute Flatten.VB_Description = "Returns an Array free of extra 'layers' caused by forwarding a ParamArray as the sole ParamArray argument"
     
-    Dim xArrCandidate As Variant
-    xArrCandidate = pArr
+    Dim xArray As Variant
+    xArray = pParamArray
     
-    If IsInitialParamArray(xArrCandidate) Then
-        RemoveNestingLevel = xArrCandidate
-        Exit Function
-    End If
+    Do While Not IsInitialParamArray(xArray)
+        xArray = xArray(LBound(xArray, 1))
+    Loop
     
-    RemoveNestingLevel = RemoveNesting(First(xArrCandidate))
-        
+    Flatten = xArray
 End Function
 
 Private Function IsInitialParamArray(ByVal pArr As Variant) As Boolean
     
     IsInitialParamArray = False
+        
+    'A forwarded ParamArray results in a 1-D, single element array
+    'Exception: See Note above
     
-    'Empty ParamArray/Array
-    If UBound(pArr, 1) - LBound(pArr, 1) = -1 Then
+    If Dimensions(pArr) <> 1 Or Length(pArr) <> 1 Then
+        'Anything but a 1-D single element array is the initial ParamArray
         IsInitialParamArray = True
-        Exit Function
-    End If
-    
-    'ParamArrays are always nested within single-dimension, single element arrays.
-    'Finding any other kind of dimensioned array indicates that the
-    'initial ParamArray content has been reached...and, it contained
-    'a multi-dimensional array
-    If CountOfDimensions(pArr) > 1 Then
-        IsInitialParamArray = True
-        Exit Function
-    End If
-
-    'Finding any value/object in the first position
-    'indicates that the initial ParamArray content has been reached
-    If Not IsArray(First(pArr)) Then
+    ElseIf Not IsArray(pArr(LBound(pArr, 1))) Then
+        'An array starting with a value/object is the initial ParamArray content
         IsInitialParamArray = True
     End If
-
 End Function
 
-Private Function CountOfDimensions(ByVal pArr As Variant) As Long
+Private Function Dimensions(ByVal pArr As Variant) As Long
 
     'https://excelatfinance.com/xlf/xlf-big-array.php
     Const MAX_ARRAY_DIMENSIONS As Long = 60
     
-    CountOfDimensions = 0
+    Dimensions = 0
     Dim xDim As Long
     For xDim = 1 To MAX_ARRAY_DIMENSIONS
         If Not HasDimension(pArr, xDim) Then
-            CountOfDimensions = xDim - 1
+            Dimensions = xDim - 1
             Exit Function
         End If
     Next
 
 End Function
 
-Private Function HasDimension(ByVal pArr As Variant, ByVal pDimNumber As Long) As Boolean
+Private Function HasDimension( _
+    ByVal pArr As Variant, ByVal pDimNumber As Long) As Boolean
 
     HasDimension = False
     
@@ -90,15 +76,6 @@ On Error GoTo NoDimension
 NoDimension:
 End Function
 
-Private Function First(ByVal pArr As Variant) As Variant
-    
-    Dim xIndex As Long
-    xIndex = LBound(pArr, 1)
-    
-    If TypeOf pArr(xIndex) Is Object  Then
-        Set First = pArr(xIndex)
-    Else
-        First = pArr(xIndex)
-    End If
+Private Function Length(ByVal pArr As Variant) As Long
+    Length = UBound(pArr, 1) - LBound(pArr, 1) + 1
 End Function
-

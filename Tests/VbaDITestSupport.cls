@@ -91,16 +91,3 @@ Public Function AddInterfaceID(ByVal pRecord As Object, _
     Set AddInterfaceID = xRecordCopy
 End Function
 
-Public Function Last(ByVal pArr As Variant) As Variant
-    
-    Dim xIndex As Long
-    xIndex = UBound(pArr, 1)
-    
-    If TypeOf pArr(xIndex) Is Object  Then
-        Set Last = pArr(xIndex)
-    Else
-        Last = pArr(xIndex)
-    End If
-End Function
-
-

@@ -29,7 +29,7 @@ Private Function IVbaDIFluentRegistration_ForInterface( _
     Set IVbaDIFluentRegistration_ForInterface = Me
     
     Dim xInterfaces As Variant
-    xInterfaces = ParamArrayCode.RemoveNesting(pInterfaceIDs)
+    xInterfaces = ParamArrayCode.Flatten(pInterfaceIDs)
     
     Dim xElement As Variant
     For Each xElement In xInterfaces

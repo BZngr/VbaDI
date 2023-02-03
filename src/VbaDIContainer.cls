@@ -36,7 +36,7 @@ End Sub
 
 Private Sub IVbaDIContainer_Register(ParamArray pFluentRegistrations() As Variant)
     RegisterImpl util.Concat(New Collection, _
-        ParamArrayCode.RemoveNesting(pFluentRegistrations))
+        ParamArrayCode.Flatten(pFluentRegistrations))
 End Sub
 
 Private Sub RegisterImpl(ByVal pIRegistrations As Collection)
@@ -63,7 +63,7 @@ Private Sub RegisterImpl(ByVal pIRegistrations As Collection)
 End Sub
 
 Private Sub IVbaDIContainer_RegisterUsingLoader(ParamArray pLoaders() As Variant)
-    LoadImpl util.Concat(New Collection, ParamArrayCode.RemoveNesting(pLoaders))
+    LoadImpl util.Concat(New Collection, ParamArrayCode.Flatten(pLoaders))
 End Sub
 
 Private Sub LoadImpl(ByVal pLoaders As Collection)

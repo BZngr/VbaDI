@@ -146,7 +146,7 @@ Private Function FormatString(ByVal formatText As String, _
     xPA = pIndexes
     
     Dim xIndexedValues As Variant
-    xIndexedValues = ParamArrayCode.RemoveNesting(xPA)
+    xIndexedValues = ParamArrayCode.Flatten(xPA)
     
     Dim xResult As String
     xResult = formatText

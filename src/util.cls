@@ -8,6 +8,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Attribute VB_Description = "Stateless utilities object"
+'@IgnoreModule ProcedureNotUsed
 '@PredeclaredId
 '@ModuleDescription "Stateless utilities object"
 '@Folder("VbaDI")
@@ -189,7 +190,7 @@ End Function
 Public Function Concat(ByVal pTarget As Collection, ParamArray pElements() As Variant) As Collection
 
     Dim xElements As Variant
-    xElements = ParamArrayCode.RemoveNesting(pElements)
+    xElements = ParamArrayCode.Flatten(pElements)
 
     Dim xResult As Collection
     Set xResult = New Collection
